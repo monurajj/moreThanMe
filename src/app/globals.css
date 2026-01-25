@@ -10,7 +10,12 @@
 
 /* Hero section positioning - starts from top, negative margin to cover navbar */
 .hero-section {
-  margin-top: -5rem; /* -80px to cover standard navbar (pt-20) */
+  margin-top: -5rem; /* -80px to match main padding-top */
+  margin-bottom: 0;
+  position: relative;
+  z-index: 10; /* Ensure it's below navbar but above other content */
+  top: 0;
+  padding-top: 0;
 }
 
 /* Adjust hero section margin when special day navbar is active (taller navbar) */
@@ -19,7 +24,7 @@ body.special-day-navbar main {
 }
 
 body.special-day-navbar .hero-section {
-  margin-top: -7rem; /* -112px to cover special day navbar with message */
+  margin-top: calc(-7rem - 1px); /* -112px minus 1px to eliminate gap */
 }
 
 @media (min-width: 1024px) {
@@ -28,6 +33,6 @@ body.special-day-navbar .hero-section {
   }
   
   body.special-day-navbar .hero-section {
-    margin-top: -7.5rem; /* -120px on larger screens */
+    margin-top: calc(-7.5rem - 1px); /* -120px minus 1px to eliminate gap */
   }
 }

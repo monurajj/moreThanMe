@@ -7,7 +7,6 @@ import { useState, useEffect } from "react";
 import { Menu, X, Flag } from "lucide-react";
 import { motion } from "framer-motion";
 import { getTodaySpecialDay, type SpecialDay } from "@/config/specialDays";
-import { useFestivalTest } from "@/contexts/FestivalTestContext";
 
 export default function Navbar() {
   const router = useRouter();
@@ -15,20 +14,14 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [specialDay, setSpecialDay] = useState<SpecialDay | null>(null);
-  const { testFestival } = useFestivalTest();
-
-  // Use test festival if set, otherwise check if today is a special day
-  const activeSpecialDay = testFestival || specialDay;
 
   // Check if today is a special day
   useEffect(() => {
     const todaySpecialDay = getTodaySpecialDay();
     setSpecialDay(todaySpecialDay);
-  }, []);
-
-  // Update body class based on active special day
-  useEffect(() => {
-    if (activeSpecialDay) {
+    
+    // Add class to body for padding adjustment
+    if (todaySpecialDay) {
       document.body.classList.add('special-day-navbar');
     } else {
       document.body.classList.remove('special-day-navbar');
@@ -37,7 +30,7 @@ export default function Navbar() {
     return () => {
       document.body.classList.remove('special-day-navbar');
     };
-  }, [activeSpecialDay]);
+  }, []);
 
   // Handle scroll effect
   useEffect(() => {
@@ -67,27 +60,26 @@ export default function Navbar() {
   return (
     <nav 
       className={`fixed top-0 w-full transition-all duration-300 ease-out z-50 ${
-        activeSpecialDay
+        specialDay
           ? 'shadow-lg'
           : isScrolled 
             ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-neutral-100' 
-            : 'bg-white/90 backdrop-blur-sm shadow-sm border-b border-white/20'
+            : 'bg-white/90 backdrop-blur-sm shadow-sm'
       }`}
       style={
-        activeSpecialDay
+        specialDay
           ? {
-              background: `linear-gradient(to right, ${activeSpecialDay.colors.primary}, ${activeSpecialDay.colors.middle}, ${activeSpecialDay.colors.secondary})`,
+              background: `linear-gradient(to right, ${specialDay.colors.primary}, ${specialDay.colors.middle}, ${specialDay.colors.secondary})`,
             }
           : undefined
       }
     >
       {/* Special Day Message - Above Nav Links */}
-      {activeSpecialDay && (
+      {specialDay && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full py-2 px-4 sm:px-8 border-b"
-          style={{ borderColor: `${activeSpecialDay.colors.accent}30` }}
+          className="w-full py-2 px-4 sm:px-8"
         >
           <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 sm:gap-4">
             <motion.div
@@ -95,24 +87,24 @@ export default function Navbar() {
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
               className="hidden sm:flex"
             >
-              <Flag className="w-5 h-5" style={{ color: activeSpecialDay.colors.accent }} />
+              <Flag className="w-5 h-5" style={{ color: specialDay.colors.accent }} />
             </motion.div>
             <motion.h2
               className="text-sm sm:text-base md:text-lg font-extrabold text-center"
-              style={{ color: activeSpecialDay.colors.text }}
+              style={{ color: specialDay.colors.text }}
               animate={{ scale: [1, 1.02, 1] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             >
-              {activeSpecialDay.emoji} {activeSpecialDay.message} {new Date().getFullYear()} {activeSpecialDay.emoji}
+              {specialDay.emoji} {specialDay.message} {new Date().getFullYear()} {specialDay.emoji}
             </motion.h2>
-            {activeSpecialDay.hindiMessage && (
+            {specialDay.hindiMessage && (
               <motion.p
                 className="hidden md:block text-xs sm:text-sm font-semibold"
-                style={{ color: activeSpecialDay.colors.text }}
+                style={{ color: specialDay.colors.text }}
                 animate={{ opacity: [0.7, 1, 0.7] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
               >
-                {activeSpecialDay.hindiMessage}
+                {specialDay.hindiMessage}
               </motion.p>
             )}
           </div>
@@ -121,7 +113,7 @@ export default function Navbar() {
 
       {/* Main Navbar Content */}
       <div className={`flex items-center justify-between px-4 sm:px-8 ${
-        activeSpecialDay ? 'py-3' : isScrolled ? 'py-3' : 'py-4'
+        specialDay ? 'py-3' : isScrolled ? 'py-3' : 'py-4'
       }`}>
         {/* Logo */}
         <Link href="/" className="flex items-center cursor-pointer focus:outline-none focus-visible:outline-none" aria-label="Go to home page">
@@ -135,17 +127,17 @@ export default function Navbar() {
           />
           <span 
             className={`font-bold text-2xl transition-all duration-300 hidden lg:inline ${
-              activeSpecialDay 
+              specialDay 
                 ? '' 
                 : isScrolled 
                   ? 'text-primary-800 scale-95' 
                   : 'text-primary-800 scale-100'
             }`}
-            style={activeSpecialDay ? { color: activeSpecialDay.colors.text } : undefined}
+            style={specialDay ? { color: specialDay.colors.text } : undefined}
           >
             morethan<span 
               className="italic ml-1"
-              style={activeSpecialDay ? { color: activeSpecialDay.colors.text } : undefined}
+              style={specialDay ? { color: specialDay.colors.text } : undefined}
             >
               me
             </span>
@@ -154,7 +146,7 @@ export default function Navbar() {
         {/* Hamburger for mobile and tablet */}
         <button
           className="lg:hidden ml-auto p-2 rounded focus:outline-none focus:ring-2 focus:ring-primary-600"
-          style={{ color: activeSpecialDay ? activeSpecialDay.colors.text : '#374151' }}
+          style={{ color: specialDay ? specialDay.colors.text : '#374151' }}
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           onClick={() => setMenuOpen((open) => !open)}
         >
@@ -171,7 +163,7 @@ export default function Navbar() {
               >
                 <span 
                   className={`transition-colors duration-300 ${
-                    activeSpecialDay
+                    specialDay
                       ? pathname === link.href
                         ? "font-bold"
                         : "opacity-80 group-hover:opacity-100"
@@ -179,7 +171,7 @@ export default function Navbar() {
                         ? "text-primary-600" 
                         : "text-neutral-700 group-hover:text-primary-600"
                   }`}
-                  style={activeSpecialDay ? { color: activeSpecialDay.colors.text } : undefined}
+                  style={specialDay ? { color: specialDay.colors.text } : undefined}
                 >
                   {link.label}
                 </span>
@@ -191,7 +183,7 @@ export default function Navbar() {
                       : "w-0 group-hover:w-full"
                   }`}
                   style={{ 
-                    backgroundColor: activeSpecialDay ? activeSpecialDay.colors.accent : '#A51C30',
+                    backgroundColor: specialDay ? specialDay.colors.accent : '#A51C30',
                   }}
                 ></span>
               </Link>
@@ -204,7 +196,7 @@ export default function Navbar() {
             onClick={handleDonate}
             className="px-6 py-2 rounded-lg font-semibold transition-colors duration-200 focus:outline-none focus-visible:outline-none text-white"
             style={{
-              backgroundColor: activeSpecialDay ? activeSpecialDay.colors.accent : '#A51C30',
+              backgroundColor: specialDay ? specialDay.colors.accent : '#A51C30',
             }}
             onMouseEnter={(e) => {
               if (specialDay) {
@@ -238,10 +230,9 @@ export default function Navbar() {
         className={`fixed top-0 right-0 transform transition-transform duration-300 ease-in-out lg:hidden
         ${menuOpen ? "translate-x-0" : "translate-x-full"}`}
         style={{ 
-          background: activeSpecialDay 
-            ? `linear-gradient(to bottom, ${activeSpecialDay.colors.primary}, ${activeSpecialDay.colors.middle}, ${activeSpecialDay.colors.secondary})`
+          background: specialDay 
+            ? `linear-gradient(to bottom, ${specialDay.colors.primary}, ${specialDay.colors.middle}, ${specialDay.colors.secondary})`
             : '#ffffff',
-          borderLeft: activeSpecialDay ? `2px solid ${activeSpecialDay.colors.accent}` : '1px solid #e5e7eb',
           opacity: '1',
           backdropFilter: 'none',
           WebkitBackdropFilter: 'none',
@@ -249,6 +240,7 @@ export default function Navbar() {
           width: '256px',
           zIndex: 9999,
           boxShadow: '-4px 0 15px rgba(0, 0, 0, 0.1)',
+          borderLeft: specialDay ? `2px solid ${specialDay.colors.accent}` : '1px solid #e5e7eb',
           display: 'flex',
           flexDirection: 'column',
           position: 'fixed',
