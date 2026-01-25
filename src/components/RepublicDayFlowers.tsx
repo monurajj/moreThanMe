@@ -2,19 +2,20 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { getTodaySpecialDay } from "@/config/specialDays";
 
 export default function RepublicDayFlowers() {
-  const [isVisible, setIsVisible] = useState(false);
+  const [specialDay, setSpecialDay] = useState<ReturnType<typeof getTodaySpecialDay>>(null);
 
   useEffect(() => {
-    // Check if today is Republic Day (January 26)
-    const today = new Date();
-    const month = today.getMonth(); // 0-11, January is 0
-    const date = today.getDate();
-    setIsVisible(month === 0 && date === 26);
+    setSpecialDay(getTodaySpecialDay());
   }, []);
 
-  // Tricolor flowers
+  if (!specialDay || !specialDay.flowerColors) return null;
+
+  const flowerColors = specialDay.flowerColors; // TypeScript guard
+
+  // Flowers with colors from special day configuration
   const flowers = Array.from({ length: 30 }).map((_, i) => ({
     id: `flower-${i}`,
     left: Math.random() * 100,
@@ -22,10 +23,8 @@ export default function RepublicDayFlowers() {
     duration: 8 + Math.random() * 4,
     size: 20 + Math.random() * 30,
     rotation: Math.random() * 360,
-    color: ["#FF9933", "#FFFFFF", "#138808"][Math.floor(Math.random() * 3)],
+    color: flowerColors[Math.floor(Math.random() * flowerColors.length)],
   }));
-
-  if (!isVisible) return null;
 
   return (
     <div className="fixed inset-0 pointer-events-none z-30 overflow-hidden">

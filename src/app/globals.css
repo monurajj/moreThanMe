@@ -8,13 +8,13 @@
   outline-offset: 2px;
 }
 
-/* Adjust main padding when Republic Day navbar is active */
-body.republic-day-navbar main {
-  padding-top: 7rem; /* Extra padding for Republic Day message row */
+/* Adjust main padding when special day navbar is active */
+body.special-day-navbar main {
+  padding-top: 7rem; /* Extra padding for special day message row */
 }
 
 @media (min-width: 1024px) {
-  body.republic-day-navbar main {
+  body.special-day-navbar main {
     padding-top: 7.5rem;
   }
 }
