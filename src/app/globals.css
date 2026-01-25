@@ -8,13 +8,13 @@
   outline-offset: 2px;
 }
 
-/* Add padding when Republic Day banner is visible */
-body.republic-day-banner-visible main {
-  padding-top: 9rem; /* 80px navbar + ~64px banner */
+/* Adjust main padding when Republic Day navbar is active */
+body.republic-day-navbar main {
+  padding-top: 7rem; /* Extra padding for Republic Day message row */
 }
 
 @media (min-width: 1024px) {
-  body.republic-day-banner-visible main {
-    padding-top: 9.5rem; /* Slightly more on larger screens */
+  body.republic-day-navbar main {
+    padding-top: 7.5rem;
   }
 }
