@@ -3,17 +3,22 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { getTodaySpecialDay } from "@/config/specialDays";
+import { useFestivalTest } from "@/contexts/FestivalTestContext";
 
 export default function RepublicDayFlowers() {
   const [specialDay, setSpecialDay] = useState<ReturnType<typeof getTodaySpecialDay>>(null);
+  const { testFestival } = useFestivalTest();
 
   useEffect(() => {
     setSpecialDay(getTodaySpecialDay());
   }, []);
 
-  if (!specialDay || !specialDay.flowerColors) return null;
+  // Use test festival if set, otherwise use today's special day
+  const activeSpecialDay = testFestival || specialDay;
 
-  const flowerColors = specialDay.flowerColors; // TypeScript guard
+  if (!activeSpecialDay || !activeSpecialDay.flowerColors) return null;
+
+  const flowerColors = activeSpecialDay.flowerColors; // TypeScript guard
 
   // Flowers with colors from special day configuration
   const flowers = Array.from({ length: 30 }).map((_, i) => ({
