@@ -33,20 +33,22 @@ export default function Home() {
   return (
     <main>
       {/* Hero Section */}
-      <section className="relative w-full min-h-screen flex flex-col bg-neutral-800 -mt-20">
+      <section className="relative w-full min-h-screen flex flex-col bg-neutral-800 hero-section" style={{ marginTop: '-10rem', top: 0 }}>
         {/* Hero Content Wrapper */}
-        <div className="flex-1 flex items-center">
+        <div className="flex-1 flex items-center relative">
           {/* Background Image */}
-          <Image
-            src="https://res.cloudinary.com/dpuhlmcth/image/upload/v1753466891/DSC1803-scaled_enhcsi.jpg"
-            alt="Children smiling"
-            layout="fill"
-            objectFit="cover"
-            objectPosition="center"
-            className="absolute inset-0 w-full h-full z-0 opacity-90"
-          />
+          <div className="absolute inset-0 w-full h-full z-0" style={{ top: '-2px', height: 'calc(100% + 2px)' }}>
+            <Image
+              src="https://res.cloudinary.com/dpuhlmcth/image/upload/v1753466891/DSC1803-scaled_enhcsi.jpg"
+              alt="Children smiling"
+              layout="fill"
+              objectFit="cover"
+              objectPosition="center"
+              className="w-full h-full opacity-90"
+            />
+          </div>
           {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30 z-10" style={{ top: '-2px', height: 'calc(100% + 2px)' }} />
           {/* Content */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
