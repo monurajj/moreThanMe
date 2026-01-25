@@ -2,7 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ['res.cloudinary.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+    ],
   },
   webpack: (config) => {
     config.watchOptions = {
@@ -10,6 +15,7 @@ const nextConfig: NextConfig = {
     };
     return config;
   },
+  turbopack: {},
 };
 
 export default nextConfig;
