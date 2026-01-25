@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Button from "../components/Button";
 import { Users, HeartHandshake, GraduationCap } from "lucide-react";
 import PhotoGallery from "../components/PhotoGallery";
+import RepublicDayBanner from "../components/RepublicDayBanner";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -32,6 +33,9 @@ export default function Home() {
 
   return (
     <main>
+      {/* Republic Day Banner */}
+      <RepublicDayBanner />
+      
       {/* Hero Section */}
       <section className="relative w-full min-h-screen flex flex-col bg-neutral-800 -mt-20">
         {/* Hero Content Wrapper */}
