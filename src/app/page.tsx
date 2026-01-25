@@ -33,7 +33,7 @@ export default function Home() {
   return (
     <main>
       {/* Hero Section */}
-      <section className="relative w-full min-h-screen flex flex-col bg-neutral-800 -mt-20">
+      <section className="relative w-full min-h-screen flex flex-col bg-neutral-800 hero-section">
         {/* Hero Content Wrapper */}
         <div className="flex-1 flex items-center">
           {/* Background Image */}

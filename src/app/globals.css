@@ -8,13 +8,26 @@
   outline-offset: 2px;
 }
 
-/* Adjust main padding when special day navbar is active */
+/* Hero section positioning - starts from top, negative margin to cover navbar */
+.hero-section {
+  margin-top: -5rem; /* -80px to cover standard navbar (pt-20) */
+}
+
+/* Adjust hero section margin when special day navbar is active (taller navbar) */
 body.special-day-navbar main {
   padding-top: 7rem; /* Extra padding for special day message row */
+}
+
+body.special-day-navbar .hero-section {
+  margin-top: -7rem; /* -112px to cover special day navbar with message */
 }
 
 @media (min-width: 1024px) {
   body.special-day-navbar main {
     padding-top: 7.5rem;
+  }
+  
+  body.special-day-navbar .hero-section {
+    margin-top: -7.5rem; /* -120px on larger screens */
   }
 }
