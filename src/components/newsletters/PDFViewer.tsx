@@ -4,11 +4,10 @@ import { useEffect } from 'react';
 
 interface PDFViewerProps {
   url: string;
-  title: string;
   onClose: () => void;
 }
 
-export default function PDFViewer({ url, title, onClose }: PDFViewerProps) {
+export default function PDFViewer({ url, onClose }: PDFViewerProps) {
   useEffect(() => {
     // Open PDF in new tab
     window.open(url, '_blank');

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Users, Mail, Phone, Linkedin, Instagram } from "lucide-react";
+import { Users, Mail, Phone } from "lucide-react";
 
 export default function TeamPage() {
   const teamMembers = [

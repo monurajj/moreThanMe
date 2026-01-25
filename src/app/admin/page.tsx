@@ -7,7 +7,6 @@ import {
   LayoutDashboard, 
   Newspaper, 
   Users, 
-  Settings, 
   LogOut,
   Menu,
   X
@@ -167,7 +166,7 @@ export default function AdminPage() {
               Dashboard Overview
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Monitor and manage your organization's activities
+              Monitor and manage your organization&apos;s activities
             </p>
           </div>
 

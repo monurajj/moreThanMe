@@ -57,7 +57,7 @@ export default function NewsletterList() {
           Stay Tuned!
         </div>
         <div className="text-gray-500 dark:text-gray-400 text-center max-w-md">
-          We're working on bringing you our latest newsletters. Check back soon for updates and stories from our community.
+          We&apos;re working on bringing you our latest newsletters. Check back soon for updates and stories from our community.
         </div>
       </div>
     );
