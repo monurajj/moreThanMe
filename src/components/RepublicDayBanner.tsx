@@ -5,17 +5,46 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Flag } from "lucide-react";
 
 export default function RepublicDayBanner() {
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
   const [showConfetti, setShowConfetti] = useState(true);
 
   useEffect(() => {
-    // Auto-hide after 10 seconds
-    const timer = setTimeout(() => {
+    // Check if today is Republic Day (January 26)
+    const today = new Date();
+    const month = today.getMonth(); // 0-11, January is 0
+    const date = today.getDate();
+    const todayKey = `republic-day-${today.getFullYear()}-${month}-${date}`;
+    
+    // Show banner if today is January 26 (Republic Day) and not dismissed
+    const isRepublicDay = month === 0 && date === 26;
+    const isDismissed = localStorage.getItem(todayKey) === 'dismissed';
+    
+    if (isRepublicDay && !isDismissed) {
+      setIsVisible(true);
+      // Add class to body for padding adjustment
+      document.body.classList.add('republic-day-banner-visible');
+    } else {
       setIsVisible(false);
-    }, 10000);
+      document.body.classList.remove('republic-day-banner-visible');
+    }
 
-    return () => clearTimeout(timer);
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('republic-day-banner-visible');
+    };
   }, []);
+
+  const handleClose = () => {
+    const today = new Date();
+    const month = today.getMonth();
+    const date = today.getDate();
+    const todayKey = `republic-day-${today.getFullYear()}-${month}-${date}`;
+    
+    // Remember dismissal for today only
+    localStorage.setItem(todayKey, 'dismissed');
+    setIsVisible(false);
+    document.body.classList.remove('republic-day-banner-visible');
+  };
 
   // Confetti particles
   const confetti = Array.from({ length: 50 }).map((_, i) => ({
@@ -41,7 +70,7 @@ export default function RepublicDayBanner() {
     <>
       {/* Tricolor Flowers Falling from Sky - Full Screen */}
       {isVisible && (
-        <div className="fixed inset-0 pointer-events-none z-40 overflow-hidden">
+        <div className="fixed inset-0 pointer-events-none z-30 overflow-hidden">
           {flowers.map((flower) => (
             <motion.div
               key={flower.id}
@@ -106,7 +135,8 @@ export default function RepublicDayBanner() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
             transition={{ duration: 0.6, type: "spring" }}
-            className="fixed top-0 left-0 right-0 z-50 overflow-hidden"
+            className="fixed left-0 right-0 z-40 overflow-hidden"
+            style={{ top: '80px' }} // Position below navbar (navbar is ~80px tall)
           >
             {/* Confetti Container */}
             {showConfetti && (
@@ -233,7 +263,7 @@ export default function RepublicDayBanner() {
 
               {/* Right: Close Button */}
               <motion.button
-                onClick={() => setIsVisible(false)}
+                onClick={handleClose}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 className="ml-4 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"

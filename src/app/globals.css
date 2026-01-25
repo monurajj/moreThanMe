@@ -7,3 +7,14 @@
   outline: 2px solid #2563eb;
   outline-offset: 2px;
 }
+
+/* Add padding when Republic Day banner is visible */
+body.republic-day-banner-visible main {
+  padding-top: 9rem; /* 80px navbar + ~64px banner */
+}
+
+@media (min-width: 1024px) {
+  body.republic-day-banner-visible main {
+    padding-top: 9.5rem; /* Slightly more on larger screens */
+  }
+}
