@@ -1,4 +1,80 @@
-# Deploy to Render
+# Deployment Guide
+
+This guide will help you deploy your NGO website to Vercel (recommended) or Render.
+
+## Deploy to Vercel (Recommended)
+
+Vercel is the recommended platform for Next.js applications, offering seamless integration, automatic deployments, and excellent performance.
+
+### Prerequisites
+
+1. **GitHub Repository**: Make sure your code is pushed to a GitHub repository
+2. **Supabase Project**: Ensure your Supabase project is set up and running
+3. **Vercel Account**: Sign up at [vercel.com](https://vercel.com) (free tier available)
+
+### Step 1: Deploy via Vercel Dashboard
+
+1. **Sign in to Vercel**
+   - Go to [vercel.com](https://vercel.com)
+   - Sign in with your GitHub account
+
+2. **Import Your Project**
+   - Click "Add New..." → "Project"
+   - Select your GitHub repository (`monurajj/moreThanMe`)
+   - Vercel will automatically detect it's a Next.js project
+
+3. **Configure Project Settings**
+   - **Framework Preset**: Next.js (auto-detected)
+   - **Root Directory**: `./` (default)
+   - **Build Command**: `pnpm run build` (or leave default)
+   - **Output Directory**: `.next` (default)
+   - **Install Command**: `pnpm install` (or leave default)
+
+4. **Add Environment Variables**
+   - Click "Environment Variables"
+   - Add the following variables:
+     ```
+     NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+     NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+     NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY=your_gemini_api_key (if using)
+     NEXT_PUBLIC_ADMIN_SECRET=your_admin_secret
+     ```
+   - Make sure to add them for all environments (Production, Preview, Development)
+
+5. **Deploy**
+   - Click "Deploy"
+   - Vercel will automatically build and deploy your app
+   - Your app will be available at `https://your-project-name.vercel.app`
+
+### Step 2: Automatic Deployments
+
+Vercel automatically deploys:
+- **Production**: Every push to `main` branch
+- **Preview**: Every push to other branches (creates preview URLs)
+- **Development**: Pull requests get preview deployments
+
+### Step 3: Custom Domain (Optional)
+
+1. **In Vercel Dashboard**
+   - Go to your project → Settings → Domains
+   - Add your custom domain
+   - Follow DNS configuration instructions
+
+2. **Configure DNS**
+   - Add the CNAME or A record as instructed by Vercel
+   - SSL certificate is automatically provisioned
+
+### Vercel Configuration
+
+The `vercel.json` file is already configured in your repository with:
+- Build command: `pnpm run build`
+- Development command: `pnpm run dev`
+- Framework: Next.js
+- Region: US East (iad1)
+
+---
+
+## Deploy to Render
 
 This guide will help you deploy your NGO website to Render.
 
