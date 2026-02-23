@@ -94,9 +94,9 @@ export default function Home() {
                className="bg-transparent hover:bg-white/10 text-white border-2 border-white font-semibold py-3 px-8 rounded-lg shadow-sm text-lg w-full sm:w-auto">
                 Join Us
               </Button>
-              <Button onClick={handleDonate} className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-lg shadow-sm text-lg w-full sm:w-auto">
-                Donate Now
-              </Button>
+             {/*  <Button onClick={handleDonate} className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-lg shadow-sm text-lg w-full sm:w-auto">
+                Donate Now 
+              </Button> */}
             </motion.div>
           </motion.div>
         </div>
