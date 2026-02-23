@@ -51,11 +51,11 @@ export default function TransparencyPage() {
                 className="bg-transparent hover:bg-primary-50 text-primary-600 border-2 border-primary-600 font-semibold py-3 px-8 rounded-lg text-lg">
                 Join Our Mission
               </Button>
-              <Button 
+              {/* <Button 
                 onClick={() => router.push("/donate")} 
                 className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-lg text-lg">
                 Support Our Foundation
-              </Button>
+              </Button> */}
             </motion.div>
           </motion.div>
         </div>
@@ -250,11 +250,11 @@ export default function TransparencyPage() {
               transition={{ duration: 0.6, delay: 0.6 }}
               className="flex flex-col sm:flex-row gap-4 justify-center"
             >
-              <Button 
+              {/* <Button 
                 onClick={() => router.push("/donate")} 
                 className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-lg text-lg">
                 Make a Donation
-              </Button>
+              </Button> */}
               <Button
                 onClick={() => router.push("/joinUs")}
                 className="bg-transparent hover:bg-primary-50 text-primary-600 border-2 border-primary-600 font-semibold py-3 px-8 rounded-lg text-lg">
