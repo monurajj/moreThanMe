@@ -53,11 +53,11 @@ export default function ContactPage() {
                 className="bg-transparent hover:bg-primary-50 text-primary-600 border-2 border-primary-600 font-semibold py-3 px-8 rounded-lg text-lg">
                 Join Our Team
               </Button>
-              <Button 
+              {/* <Button 
                 onClick={() => router.push("/donate")} 
                 className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-lg text-lg">
                 Support Our Cause
-              </Button>
+              </Button> */}
             </motion.div>
           </motion.div>
         </div>
