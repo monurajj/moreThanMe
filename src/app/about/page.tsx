@@ -71,11 +71,11 @@ export default function AboutPage() {
                 className="bg-transparent hover:bg-white/10 text-white border-2 border-white font-semibold py-3 px-8 rounded-lg shadow-sm text-lg w-full sm:w-auto">
                 Join Our Mission
               </Button>
-              <Button 
+              {/* <Button 
                 onClick={() => router.push("/donate")} 
                 className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-lg shadow-sm text-lg w-full sm:w-auto">
                 Support Us
-              </Button>
+              </Button> */}
             </motion.div>
           </motion.div>
         </div>
@@ -108,7 +108,7 @@ export default function AboutPage() {
                   Our Story
                 </h2>
                 <p className="text-xl text-neutral-600 mb-6 leading-relaxed">
-                  Founded by passionate students, our NGO began as a small initiative to help local communities. 
+                  Founded by passionate students, our Suppo began as a small initiative to help local communities. 
                   Today, we unite students, partners, and volunteers to create a ripple effect of positive change 
                   across India.
                 </p>
@@ -185,23 +185,19 @@ export default function AboutPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
                 <div className="space-y-6">
                   <p className="text-lg text-neutral-600 leading-relaxed">
-                    The idea for our NGO came to us quite unexpectedly—while we were just chilling out during our internships. 
-                    In those moments of reflection, we realized that even a small act of kindness could make a big difference 
-                    in someone&apos;s life.
+                    The idea for More Than Me began during conversations among friends while we were interning and reflecting on our own growth. We realized that structured learning opportunities and collaborative discussions can create meaningful impact for students.
                   </p>
                   <p className="text-lg text-neutral-600 leading-relaxed">
-                    It wasn&apos;t about the amount we could give, but about the satisfaction and joy of helping those in need.
+                    With encouragement from our teachers and mentors, especially Paroksh Sir, we decided to turn this idea into action.
                   </p>
                 </div>
                 
                 <div className="space-y-6">
                   <p className="text-lg text-neutral-600 leading-relaxed">
-                    Inspired by this thought, we began discussing our vision with our teachers and mentors. Their encouragement, 
-                    especially from Paroksh sir, gave us the confidence to take the first step.
+                  Today, More Than Me organizes workshops, skill-development sessions, and campus-based events focused on personal and professional growth. To support event logistics, materials, and operations, we collect a fixed participation fee for each event.
                   </p>
                   <p className="text-lg text-neutral-600 leading-relaxed">
-                    With their support, what started as a simple idea among friends quickly grew into a movement dedicated 
-                    to spreading hope and compassion.
+                    Our mission is to create practical learning experiences that inspire growth, responsibility, and community engagement.
                   </p>
                 </div>
               </div>

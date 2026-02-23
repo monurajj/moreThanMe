@@ -98,8 +98,8 @@ export default function ContactPage() {
                 <p className="text-neutral-600 leading-relaxed mb-4">
                   Send us a message and we&apos;ll get back to you within 24 hours.
                 </p>
-                <a href="mailto:morethanme.ngo@gmail.com" className="text-primary-600 hover:text-primary-700 font-medium">
-                  morethanme.ngo@gmail.com
+                <a href="mailto:unitedforgood2025@gmail.com" className="text-primary-600 hover:text-primary-700 font-medium">
+                  unitedforgood2025@gmail.com
                 </a>
               </div>
             </motion.div>
@@ -241,7 +241,7 @@ export default function ContactPage() {
       </section>
 
       {/* Social Media Section */}
-      <section className="w-full bg-white py-24 px-4">
+      {/* <section className="w-full bg-white py-24 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -283,7 +283,7 @@ export default function ContactPage() {
             </motion.div>
           </motion.div>
         </div>
-      </section>
+      </section> */}
     </main>
   );
 } 

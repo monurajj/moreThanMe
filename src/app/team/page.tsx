@@ -5,16 +5,16 @@ import { Users, Mail, Phone } from "lucide-react";
 
 export default function TeamPage() {
   const teamMembers = [
-    { name: "A M YEESHU", role: "Team Manager, Tech Management" },
-    { name: "Prince Sahoo", role: "Tech Management" },
+    // { name: "A M YEESHU", role: "Team Manager, Tech Management" },
+    // { name: "Prince Sahoo", role: "Tech Management" },
     { name: "Sourabh sarkar", role: "Finance and Social Media" },
     { name: "Akash", role: "Finance" },
     { name: "Monu Kumar", role: "POC & Outreaches" },
     { name: "Manish Kumar", role: "POC & Outreaches" },
     { name: "Shreya Narayani", role: "Outreaches and Social Media" },
-    { name: "Prashant", role: "Event & Resource Management" },
+    // { name: "Prashant", role: "Event & Resource Management" },
     { name: "Kartik Reddy", role: "Event & Resource Management" },
-    { name: "Anjana Kamle", role: "Event & Resource Management" },
+    // { name: "Anjana Kamle", role: "Event & Resource Management" },
     { name: "Murli", role: "Media Management" },
   ];
   return (
@@ -88,7 +88,7 @@ export default function TeamPage() {
                   <h3 className="text-xl font-bold text-primary-800 mb-2">{member.name}</h3>
                   <p className="text-primary-600 font-medium mb-4">{member.role}</p>
                   <div className="flex justify-center gap-3">
-                    <a href="mailto:morethanme.ngo@gmail.com" className="text-neutral-400 hover:text-primary-600 transition-colors" aria-label="Email">
+                    <a href="mailto:unitedforgood2025@gmail.com" className="text-neutral-400 hover:text-primary-600 transition-colors" aria-label="Email">
                       <Mail className="w-5 h-5" />
                     </a>
                     <a href="tel:+917541062514" className="text-neutral-400 hover:text-primary-600 transition-colors" aria-label="Call">

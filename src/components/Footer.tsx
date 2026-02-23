@@ -14,10 +14,10 @@ export default function Footer() {
               <span className="italic ml-1 text-primary-600">me</span>
             </Link>
             <p className="text-neutral-300 mb-4 leading-relaxed">
-              A student-led charitable initiative from Rishihood University, dedicated to uplifting communities across India through compassion, service, and meaningful change.
+              A student-led initiative from Rishihood University, dedicated to uplifting communities across India through compassion, service, and meaningful change.
             </p>
             <p className="text-sm text-neutral-400">
-              Registered Student Organization<br />
+              Student Organization<br />
               Rishihood University, Batch 2023
             </p>
           </div>
@@ -28,7 +28,7 @@ export default function Footer() {
             <div className="space-y-3 text-sm text-neutral-300">
               <div>
                 <p className="font-medium text-neutral-200">Email</p>
-                <p>morethanme.ngo@gmail.com</p>
+                <p>unitedforgood2025@gmail.com</p>
               </div>
               <div>
                 <p className="font-medium text-neutral-200">Phone</p>
@@ -47,11 +47,10 @@ export default function Footer() {
             <h3 className="text-lg font-semibold mb-4 text-white">Quick Links</h3>
             <div className="space-y-2 text-sm">
               <Link href="/about" className="block text-neutral-300 hover:text-white transition-colors">About Us</Link>
-              <Link href="/our-family" className="block text-neutral-300 hover:text-white transition-colors">Our Family</Link>
+              {/* <Link href="/our-family" className="block text-neutral-300 hover:text-white transition-colors">Our Family</Link> */}
               <Link href="/transparency" className="block text-neutral-300 hover:text-white transition-colors">Transparency</Link>
               <Link href="/contact" className="block text-neutral-300 hover:text-white transition-colors">Contact</Link>
               <Link href="/joinUs" className="block text-neutral-300 hover:text-white transition-colors">Join Us</Link>
-              <Link href="/donate" className="inline-block bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded font-medium transition-colors">Donate Now</Link>
             </div>
           </div>
         </div>

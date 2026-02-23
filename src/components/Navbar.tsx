@@ -49,11 +49,11 @@ export default function Navbar() {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About us" },
-    { href: "/our-family", label: "Our Family" },
+    // { href: "/our-family", label: "Our Family" },
     { href: "/team", label: "Our Team" },
     // { href: "/projects", label: "What We Do" },
     // { href: "/media", label: "Media" },
-    { href: "/newsletters", label: "Newsletters" },
+    // { href: "/newsletters", label: "Newsletters" },
     { href: "/contact", label: "Contact" },
     { href: "/transparency", label: "Transparency" },
   ];
@@ -192,7 +192,7 @@ export default function Navbar() {
         </div>
         {/* Donate Button - Desktop */}
         <div className="hidden lg:block">
-          <Button
+          {/* <Button
             onClick={handleDonate}
             className="px-6 py-2 rounded-lg font-semibold transition-colors duration-200 focus:outline-none focus-visible:outline-none text-white"
             style={{
@@ -210,7 +210,7 @@ export default function Navbar() {
             }}
           >
             Donate
-          </Button>
+          </Button> */}
         </div>
       </div>
       {/* Mobile Menu Overlay */}
@@ -289,7 +289,7 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <Button
+          {/* <Button
             onClick={() => {
               setMenuOpen(false);
               handleDonate();
@@ -307,7 +307,7 @@ export default function Navbar() {
             }}
           >
             Donate
-          </Button>
+          </Button> */}
         </nav>
       </div>
     </nav>
