@@ -8,7 +8,6 @@ export default function JoinPage() {
   const [form, setForm] = useState({
     name: "",
     email: "",
-    enrollment: "",
     batch: "2023",
     course: "BTECH",
     phone: "",
@@ -27,11 +26,6 @@ export default function JoinPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    if (!form.email.trim().toLowerCase().endsWith("@rishihood.edu.in")) {
-      setLoading(false);
-      setError("Only Rishihood University emails (@rishihood.edu.in) can sign up.");
-      return;
-    }
     const res = await fetch("/api/join", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -39,7 +33,6 @@ export default function JoinPage() {
         name: form.name,
         email: form.email.trim(),
         phone: form.phone.trim() || undefined,
-        enrollment: form.enrollment.trim() || undefined,
         batch: form.batch,
         course: form.course,
         why_join: form.why_join.trim() || undefined,
@@ -63,11 +56,9 @@ export default function JoinPage() {
     <main className="p-8 max-w-3xl mx-auto">
       <h1 className="text-3xl font-bold mb-4">Join Us</h1>
       <p className="mb-4 text-gray-700 dark:text-gray-300">
-        Become a volunteer and help us make a difference! Fill out the form below to join our team at Rishihood University.
+        Become a volunteer and help us make a difference! Fill out the form below to join our team.
       </p>
-      <p className="mb-8 px-4 py-3 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-800 dark:text-primary-200 font-medium border border-primary-200 dark:border-primary-800">
-        Result of first cohort: <strong>17th March</strong>
-      </p>
+      
       <form
         onSubmit={handleSubmit}
         className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl space-y-6 border border-blue-100 dark:border-blue-700 mb-12"
@@ -80,11 +71,14 @@ export default function JoinPage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Photo</label>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+            We will use this for your profile photo and for internal team requirements (e.g., team directory, team photos).
+          </p>
           <CloudinaryUpload
             onUpload={(url) => setImageUrl(url)}
             folder="morethanme/team"
             accept="image/*"
-            maxSizeMB={2}
+            maxSizeMB={10}
           />
           {imageUrl && <span className="ml-2 text-xs text-green-600 dark:text-green-400">Photo added</span>}
         </div>
@@ -106,14 +100,14 @@ export default function JoinPage() {
 
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            University Email <span className="text-red-500">*</span>
+            Email <span className="text-red-500">*</span>
           </label>
           <input
             type="email"
             id="email"
             name="email"
             required
-            placeholder="yourname@rishihood.edu.in"
+            placeholder="yourname@example.com"
             value={form.email}
             onChange={handleChange}
             className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
@@ -132,22 +126,6 @@ export default function JoinPage() {
             onChange={handleChange}
             className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
             placeholder="e.g. 9876543210"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="enrollment" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Enrollment Number <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="enrollment"
-            name="enrollment"
-            required
-            placeholder="e.g. RU2023XXXX"
-            value={form.enrollment}
-            onChange={handleChange}
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
           />
         </div>
 

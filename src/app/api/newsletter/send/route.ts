@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminFromRequest } from "@/lib/adminAuth";
-import { sendEmail } from "@/lib/brevo";
+import { sendEmail, getEmailFooter, EMAIL_BRAND } from "@/lib/brevo";
 
 export async function POST(request: Request) {
   const admin = await getAdminFromRequest(request);
@@ -33,21 +33,18 @@ export async function POST(request: Request) {
 
   const finalSubject = subject || "New Newsletter from More Than Me";
   const desc = newsletterDescription ? `<p>${newsletterDescription}</p>` : "";
-  const finalHtml =
-    htmlContent ||
-    `<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"></head>
-<body style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <h2 style="color: #A51C30;">More Than Me</h2>
+  const defaultBody = `
+  <h2 style="color: ${EMAIL_BRAND.primary}; margin-top: 0;">More Than Me</h2>
   <p>Hello!</p>
   <p>${newsletterTitle ? `We've published a new newsletter: <strong>${newsletterTitle}</strong>.` : "A new newsletter has been published."}</p>
   ${desc}
-  ${newsletterUrl ? `<p><a href="${newsletterUrl}" style="color: #A51C30; font-weight: bold;">Read the newsletter →</a></p>` : ""}
+  ${newsletterUrl ? `<p><a href="${newsletterUrl}" style="color: ${EMAIL_BRAND.primary}; font-weight: 600;">Read the newsletter →</a></p>` : ""}
   <p>Thank you for being part of our community.</p>
-  <p style="color: #666; font-size: 12px; margin-top: 40px;">— More Than Me · Rishihood University</p>
-</body>
-</html>`;
+  ${getEmailFooter()}
+  `;
+  const finalHtml =
+    htmlContent ||
+    `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: ${EMAIL_BRAND.text};">${defaultBody}</body></html>`;
 
   const recipientsList = validEmails.map((email: string) => ({ email, name: undefined }));
 

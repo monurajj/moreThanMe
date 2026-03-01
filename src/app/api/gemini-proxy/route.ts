@@ -27,45 +27,65 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    try {
-      // Call Gemini Vision API
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      
-      const imagePart = {
-        inlineData: {
-          data: imageData,
-          mimeType: mimeType || 'image/jpeg'
-        }
-      };
-
-      const result = await model.generateContent([prompt, imagePart]);
-      const response = await result.response;
-      const content = response.text();
-
-      if (!content) {
-        throw new Error('No response from Gemini');
+    const imagePart = {
+      inlineData: {
+        data: imageData,
+        mimeType: mimeType || 'image/jpeg'
       }
+    };
 
-      return NextResponse.json({
-        success: true,
-        data: content
-      });
+    // Gemini 1.5 Flash first (15 req/min, 1,500 req/day), then fallbacks
+    const modelsToTry = ['gemini-1.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-2.5-flash'];
+    let lastError: Error | null = null;
 
-    } catch (geminiError) {
-      console.error('Gemini API Error via proxy:', geminiError);
-      
-      const errorMessage = geminiError instanceof Error ? geminiError.message : 'Unknown error';
-      const isQuotaExceeded = errorMessage.includes('429') || errorMessage.includes('quota');
-      
-      return NextResponse.json(
-        { 
-          error: isQuotaExceeded ? 'Gemini quota exceeded. Please try again later.' : 'Failed to process with Gemini', 
-          details: errorMessage,
-          quotaExceeded: isQuotaExceeded
-        },
-        { status: isQuotaExceeded ? 429 : 500 }
-      );
+    const isQuotaErr = (msg: string) =>
+      /429|quota|rate limit|resource.?exhausted|exceeded|resource_exhausted|retry/i.test(msg);
+    const isModelNotFound = (msg: string) => /404|not found|not supported/i.test(msg);
+
+    for (const modelName of modelsToTry) {
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          const model = genAI.getGenerativeModel({ model: modelName });
+          const result = await model.generateContent([prompt, imagePart]);
+          const response = await result.response;
+          const content = response.text();
+
+          if (!content) throw new Error('No response from Gemini');
+
+          return NextResponse.json({
+            success: true,
+            data: content,
+            model_used: modelName
+          });
+        } catch (err) {
+          lastError = err instanceof Error ? err : new Error(String(err));
+          const msg = lastError.message;
+          const quotaErr = isQuotaErr(msg);
+          const notFound = isModelNotFound(msg);
+          console.warn(
+            `[Gemini] ${modelName} attempt ${attempt} failed:`,
+            msg.slice(0, 120),
+            notFound ? '→ model not found, trying next' : quotaErr ? '→ will retry/fallback' : '→ stopping'
+          );
+          if (!quotaErr && !notFound) break;
+          if (quotaErr && attempt === 1) await new Promise((r) => setTimeout(r, 8000));
+        }
+      }
+      if (lastError && !isQuotaErr(lastError.message) && !isModelNotFound(lastError.message)) break;
+      await new Promise((r) => setTimeout(r, 1500));
     }
+
+    const errorMessage = lastError?.message || 'Unknown error';
+    const isQuotaExceeded = isQuotaErr(errorMessage);
+    
+    return NextResponse.json(
+      { 
+        error: isQuotaExceeded ? 'Gemini quota exceeded. Please try again later.' : 'Failed to process with Gemini', 
+        details: errorMessage,
+        quotaExceeded: isQuotaExceeded
+      },
+      { status: isQuotaExceeded ? 429 : 500 }
+    );
 
   } catch (error) {
     console.error('Error in Gemini proxy:', error);

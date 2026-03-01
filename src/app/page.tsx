@@ -119,13 +119,17 @@ export default function Home() {
               className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto"
             >
               <Button
-              onClick={handleJoin}
-               className="bg-transparent hover:bg-white/10 text-white border-2 border-white font-semibold py-3 px-8 rounded-lg shadow-sm text-lg w-full sm:w-auto">
+                onClick={handleJoin}
+                className="bg-transparent hover:bg-white/10 text-white border-2 border-white font-semibold py-3 px-8 rounded-lg shadow-sm text-lg w-full sm:w-auto"
+              >
                 Join Us
               </Button>
-             {/*  <Button onClick={handleDonate} className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-lg shadow-sm text-lg w-full sm:w-auto">
-                Donate Now 
-              </Button> */}
+              <Button
+                onClick={handleDonate}
+                className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-lg shadow-sm text-lg w-full sm:w-auto"
+              >
+                Donate Now
+              </Button>
             </motion.div>
           </motion.div>
         </div>
@@ -135,50 +139,61 @@ export default function Home() {
             {/* What We Do Section */}
       <section className="w-full bg-white py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
+          {/* Row 1: Our Impact label */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="mb-4 flex justify-center"
+          >
+            <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary-50 text-primary-700 text-sm font-medium">
+              Our Impact
+            </span>
+          </motion.div>
+
+          {/* Row 2: Title */}
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-4xl lg:text-5xl font-bold text-primary-800 mb-4 leading-tight"
+          >
+            Empowering Change, One Initiative at a Time
+          </motion.h2>
+
+          {/* Row 3: Subtitle */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-xl text-neutral-600 mb-12 leading-relaxed"
+          >
+            We empower youth through education, career guidance, skill development, and environmental conservation—led by the students of Rishihood University.
+          </motion.p>
+
+          {/* Two columns: Cards (left) | Image (right) */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16"
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start"
           >
-            {/* Left: Content */}
-            <div className="flex-1 max-w-2xl">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              >
-                <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary-50 text-primary-700 text-sm font-medium mb-6">
-                  Our Impact
-                </span>
-                <h2 className="text-4xl lg:text-5xl font-bold text-primary-800 mb-6 leading-tight">
-                  Empowering Change, One Initiative at a Time
-                </h2>
-                <p className="text-xl text-neutral-600 mb-10 leading-relaxed">
-                  We empower children and families through holistic support, health initiatives, educational opportunities, and compassionate care—led by the students of Rishihood University.
-                </p>
-              </motion.div>
-
-              {/* Services Grid */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                className="grid grid-cols-1 sm:grid-cols-2 gap-6"
-              >
+            {/* Left column: 4 cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="group">
                   <div className="flex items-start gap-4 p-6 rounded-xl hover:bg-primary-50 transition-colors duration-300">
                     <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center group-hover:bg-primary-200 transition-colors">
                       <svg className="w-6 h-6 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        <path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/>
                       </svg>
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg text-primary-800 mb-2">Family Support</h3>
-                      <p className="text-neutral-600 text-sm leading-relaxed">Guidance, counseling, and resources for families to nurture and uplift their children.</p>
+                      <h3 className="font-semibold text-lg text-primary-800 mb-2">Education</h3>
+                      <p className="text-neutral-600 text-sm leading-relaxed">Access to quality education and learning opportunities to help children and youth reach their full potential.</p>
                     </div>
                   </div>
                 </div>
@@ -187,12 +202,12 @@ export default function Home() {
                   <div className="flex items-start gap-4 p-6 rounded-xl hover:bg-primary-50 transition-colors duration-300">
                     <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center group-hover:bg-primary-200 transition-colors">
                       <svg className="w-6 h-6 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M21 7L9 19l-5.5-5.5 1.41-1.41L9 16.17l10.59-10.59L21 7z"/>
+                        <path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/>
                       </svg>
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg text-primary-800 mb-2">Health Benefits</h3>
-                      <p className="text-neutral-600 text-sm leading-relaxed">Student-led health camps, wellness drives, and awareness programs for children and families.</p>
+                      <h3 className="font-semibold text-lg text-primary-800 mb-2">Career Guidance</h3>
+                      <p className="text-neutral-600 text-sm leading-relaxed">Mentorship and guidance to help youth navigate career paths and make informed decisions for their future.</p>
                     </div>
                   </div>
                 </div>
@@ -201,12 +216,12 @@ export default function Home() {
                   <div className="flex items-start gap-4 p-6 rounded-xl hover:bg-primary-50 transition-colors duration-300">
                     <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center group-hover:bg-primary-200 transition-colors">
                       <svg className="w-6 h-6 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                        <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/>
                       </svg>
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg text-primary-800 mb-2">Scholarships</h3>
-                      <p className="text-neutral-600 text-sm leading-relaxed">Financial aid and educational support to help children pursue their dreams.</p>
+                      <h3 className="font-semibold text-lg text-primary-800 mb-2">Skill Development</h3>
+                      <p className="text-neutral-600 text-sm leading-relaxed">Practical training and workshops to build employability skills and empower youth for the future.</p>
                     </div>
                   </div>
                 </div>
@@ -215,27 +230,20 @@ export default function Home() {
                   <div className="flex items-start gap-4 p-6 rounded-xl hover:bg-primary-50 transition-colors duration-300">
                     <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center group-hover:bg-primary-200 transition-colors">
                       <svg className="w-6 h-6 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M20 17.17L18.59 18.59 13 13.41V7h-2v6.41l-5.59 5.18L4 17.17l8-7.17z"/>
+                        <path d="M12 3L4 21h4l2-6h4l2 6h4L12 3z"/>
                       </svg>
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg text-primary-800 mb-2">Therapy</h3>
-                      <p className="text-neutral-600 text-sm leading-relaxed">Therapeutic activities and emotional support to help children grow with confidence and joy.</p>
+                      <h3 className="font-semibold text-lg text-primary-800 mb-2">Environmental Conservation</h3>
+                      <p className="text-neutral-600 text-sm leading-relaxed">Initiatives and awareness programs to protect our planet and promote sustainable practices in communities.</p>
                     </div>
                   </div>
                 </div>
-              </motion.div>
             </div>
 
-            {/* Right: Featured images carousel (one by one) */}
+            {/* Right column: Featured image */}
             {(hasFeaturedImages || aboutImageUrl) && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.3 }}
-                className="flex-1 max-w-lg"
-              >
+              <div className="w-full max-w-lg mx-auto lg:mx-0 lg:max-w-full">
                 <div className="relative aspect-[5/4] rounded-2xl overflow-hidden shadow-lg bg-primary-100">
                   {hasFeaturedImages ? (
                     <>
@@ -284,7 +292,7 @@ export default function Home() {
                   ) : null}
                   <div className="absolute -inset-2 bg-primary-100/50 rounded-2xl -z-10" />
                 </div>
-              </motion.div>
+              </div>
             )}
           </motion.div>
         </div>
@@ -369,7 +377,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-bold text-primary-800 mb-4">Communities in Need</h3>
                 <p className="text-neutral-600 leading-relaxed">
-                  We support underprivileged children and families across India, providing essentials, education, and hope for a brighter future.
+                  We support underprivileged children and communities across India, providing essentials, education, and hope for a brighter future.
                 </p>
               </div>
             </motion.div>

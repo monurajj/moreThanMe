@@ -10,14 +10,22 @@ interface Donor {
   status?: string;
   message?: string;
   created_at?: unknown;
+  receipt_date_time?: string | null;
+  receipt_parsed_data?: { date_time?: string | null } | null;
 }
 
 function formatDate(dateVal: unknown): string {
-  if (!dateVal) return "—";
-  const date = dateVal && typeof (dateVal as { toDate?: () => Date }).toDate === "function"
-    ? (dateVal as { toDate: () => Date }).toDate()
-    : new Date(dateVal as string | number);
-  return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  if (dateVal == null || dateVal === "") return "—";
+  const date =
+    dateVal && typeof (dateVal as { toDate?: () => Date }).toDate === "function"
+      ? (dateVal as { toDate: () => Date }).toDate()
+      : new Date(dateVal as string | number);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("en-IN", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 export default function DonorList() {
@@ -89,7 +97,9 @@ export default function DonorList() {
                 <td className="px-4 sm:px-6 py-4 text-sm text-neutral-600 max-w-xs truncate hidden sm:table-cell">
                   {donor.message ? `"${donor.message}"` : "—"}
                 </td>
-                <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-neutral-600">{formatDate(donor.created_at)}</td>
+                <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-neutral-600">
+                  {formatDate(donor.receipt_date_time ?? donor.receipt_parsed_data?.date_time ?? donor.created_at)}
+                </td>
               </tr>
             ))}
           </tbody>
