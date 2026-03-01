@@ -11,7 +11,7 @@ interface Photo {
 
 export default function PhotoGallery({ photos }: { photos: Photo[] }) {
   const isVideo = (src: string) => {
-    return src.toLowerCase().endsWith('.mp4') || src.toLowerCase().endsWith('.webm');
+    return src.toLowerCase().includes("/video/") || src.toLowerCase().endsWith(".mp4") || src.toLowerCase().endsWith(".webm");
   };
 
   return (

@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Users, Heart, TrendingUp, Search, X } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient";
 import Button from "../../components/Button";
 
 interface Donor {
@@ -17,13 +16,16 @@ interface Donor {
 interface Volunteer {
   id: string;
   name: string;
+  role: string;
+  is_core_member?: boolean;
+  image_url?: string | null;
   university_email: string;
   enrollment: string;
   batch: string;
   course?: string;
   phone?: string;
   message?: string;
-  created_at?: string;
+  created_at?: string | unknown;
 }
 
 export default function OurFamilyPage() {
@@ -42,130 +44,66 @@ export default function OurFamilyPage() {
   const [filteredDonors, setFilteredDonors] = useState<Donor[]>([]);
   const [filteredVolunteers, setFilteredVolunteers] = useState<Volunteer[]>([]);
   
-  // Toggle states
-  const [activeSection, setActiveSection] = useState<"family" | "team">("family");
+  // Toggle states: "core" = Our Core Team, "volunteers" = Volunteers only
+  const [activeSection, setActiveSection] = useState<"core" | "volunteers">("core");
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  // Filter data based on search
-  useEffect(() => {
-    const term = searchTerm.toLowerCase().trim();
-    
-    if (!term) {
-      // If no search term, show all based on active section
-      if (activeSection === "team") {
-        setFilteredDonors([]);
-        setFilteredVolunteers(volunteers);
-      } else if (activeSection === "family") {
-        setFilteredDonors(donors);
-        setFilteredVolunteers([]);
-      } else {
-        setFilteredDonors(donors);
-        setFilteredVolunteers(volunteers);
-      }
-      return;
-    }
+  const coreTeam = volunteers.filter((v) => v.is_core_member);
+  const volunteersOnly = volunteers.filter((v) => v.role === "Volunteer");
+  const listForSection = activeSection === "core" ? coreTeam : volunteersOnly;
 
-    // Section-specific search - only search in the current active section
-    if (activeSection === "family") {
-      // Only search family members when in family section
-      const filteredDonorsList = donors.filter(donor => 
-        donor.name.toLowerCase().includes(term) ||
-        donor.id.toLowerCase().includes(term) ||
-        (donor.message && donor.message.toLowerCase().includes(term))
-      );
-      setFilteredDonors(filteredDonorsList);
-      setFilteredVolunteers([]); // Don't show team members in family section
-    } else if (activeSection === "team") {
-      // Only search team members when in team section
-      const filteredVolunteersList = volunteers.filter(volunteer => 
-        volunteer.name.toLowerCase().includes(term) ||
-        volunteer.id.toLowerCase().includes(term) ||
-        volunteer.university_email.toLowerCase().includes(term) ||
-        volunteer.enrollment.toLowerCase().includes(term) ||
-        (volunteer.course && volunteer.course.toLowerCase().includes(term)) ||
-        (volunteer.message && volunteer.message.toLowerCase().includes(term))
-      );
-      setFilteredVolunteers(filteredVolunteersList);
-      setFilteredDonors([]); // Don't show family members in team section
-    }
-  }, [searchTerm, activeSection, donors, volunteers]);
+  const searchLower = searchTerm.trim().toLowerCase();
+  const displayedTeamList = searchLower
+    ? listForSection.filter(
+        (v) =>
+          v.name.toLowerCase().includes(searchLower) ||
+          v.id.toLowerCase().includes(searchLower) ||
+          (v.university_email && v.university_email.toLowerCase().includes(searchLower)) ||
+          (v.enrollment && v.enrollment.toLowerCase().includes(searchLower)) ||
+          (v.course && v.course.toLowerCase().includes(searchLower)) ||
+          (v.message && v.message.toLowerCase().includes(searchLower))
+      )
+    : listForSection;
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      
-      // Fetch all verified donors
-      const { data: donorsData, error: donorsError } = await supabase
-        .from("donations")
-        .select("id, name, status, created_at, message")
-        .eq("status", "verified")
-        .order("created_at", { ascending: false });
+      const [donorsRes, teamRes, statsRes] = await Promise.all([
+        fetch("/api/donations/donors"),
+        fetch("/api/team"),
+        fetch("/api/donations/stats"),
+      ]);
+      const donorsData = await donorsRes.json().catch(() => []);
+      const teamList = await teamRes.json().catch(() => []);
+      const statsData = await statsRes.json().catch(() => ({}));
 
-      if (donorsError) {
-        console.error("Error fetching donors:", donorsError);
-        setError("Failed to load our family members");
-        return;
-      }
+      const volunteersData: Volunteer[] = (teamList || []).map((m: Record<string, unknown>) => ({
+        id: String(m.id || ""),
+        name: String(m.name || ""),
+        role: String(m.role || "Volunteer"),
+        is_core_member: !!(m.is_core_member === true),
+        image_url: (m.image_url as string) || null,
+        university_email: String(m.email || m.university_email || ""),
+        enrollment: String(m.enrollment || ""),
+        batch: String(m.batch || ""),
+        course: String(m.course || "OTHER"),
+        phone: m.phone as string | undefined,
+        message: (m.why_join ?? m.message) as string | undefined,
+        created_at: m.created_at,
+      }));
 
-      // Fetch all volunteers
-      let volunteersData: Volunteer[] = [];
-      
-      try {
-        const { data: volunteers, error } = await supabase
-          .from('volunteers')
-          .select('*');
-        
-        if (error) {
-          console.error("Error fetching volunteers:", error);
-          volunteersData = [];
-        } else {
-          volunteersData = (volunteers || []).map(vol => ({
-            id: vol.id?.toString() || '',
-            name: vol.name || '',
-            university_email: vol.university_email || '',
-            enrollment: vol.enrollment || '',
-            batch: vol.batch || '',
-            course: vol.course || 'OTHER',
-            phone: vol.phone || undefined,
-            message: vol.message || undefined,
-            created_at: vol.created_at || undefined
-          }));
-        }
-      } catch (volErr) {
-        console.error("Exception fetching volunteers:", volErr);
-        volunteersData = [];
-      }
-
-      setDonors(donorsData || []);
+      setDonors(Array.isArray(donorsData) ? donorsData : []);
       setVolunteers(volunteersData);
-      setFilteredDonors(donorsData || []);
+      setFilteredDonors(Array.isArray(donorsData) ? donorsData : []);
       setFilteredVolunteers(volunteersData);
-
-      // Fetch statistics
-      const { data: statsData, error: statsError } = await supabase
-        .from("donation_stats")
-        .select("*")
-        .single();
-
-      if (!statsError && statsData) {
-        const newStats = {
-          totalDonors: statsData.verified_donations || 0,
-          verifiedDonors: statsData.verified_donations || 0,
-          totalVolunteers: volunteersData.length
-        };
-        setStats(newStats);
-      } else {
-        const newStats = {
-          totalDonors: donorsData?.length || 0,
-          verifiedDonors: donorsData?.length || 0,
-          totalVolunteers: volunteersData.length
-        };
-        setStats(newStats);
-      }
-
+      setStats({
+        totalDonors: statsData.verified_donations ?? donorsData?.length ?? 0,
+        verifiedDonors: statsData.verified_donations ?? donorsData?.length ?? 0,
+        totalVolunteers: volunteersData.length,
+      });
     } catch (err) {
       console.error("Error:", err);
       setError("Failed to load our family members");
@@ -174,14 +112,22 @@ export default function OurFamilyPage() {
     }
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "Recently joined";
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+  const formatDate = (dateVal?: string | unknown) => {
+    if (dateVal == null) return "Recently joined";
+    let date: Date;
+    const o = dateVal as Record<string, unknown>;
+    if (typeof dateVal === "object" && dateVal !== null && typeof o?.toDate === "function") {
+      date = (o.toDate as () => Date)();
+    } else if (typeof dateVal === "object" && dateVal !== null && (typeof o?._seconds === "number" || typeof o?.seconds === "number")) {
+      const sec = Number(o._seconds ?? o.seconds);
+      date = new Date(sec * 1000);
+    } else if (typeof dateVal === "string" || typeof dateVal === "number") {
+      date = new Date(dateVal);
+    } else {
+      return "Recently joined";
+    }
+    if (Number.isNaN(date.getTime())) return "Recently joined";
+    return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   };
 
   const getCourseDisplayName = (course: string) => {
@@ -198,7 +144,6 @@ export default function OurFamilyPage() {
 
   const clearSearch = () => {
     setSearchTerm("");
-    setActiveSection("family"); // Reset to family section when clearing search
   };
 
   if (loading) {
@@ -426,34 +371,33 @@ export default function OurFamilyPage() {
                 Discover Who Makes It All Possible
             </h2>
               <p className="text-xl text-neutral-600 max-w-3xl mx-auto leading-relaxed mb-12">
-                From generous donors who fuel our mission to dedicated volunteers who bring it to life, 
-                every member of our community plays a vital role in creating positive change.
+                Our core team and volunteers who bring our mission to life—every one of them plays a vital role in creating positive change.
             </p>
           
           <div className="flex justify-center">
             <div className="bg-white rounded-xl shadow-sm border border-primary-100 max-w-2xl w-full p-2">
               <div className="flex flex-col sm:flex-row gap-2">
               <button
-                onClick={() => setActiveSection("family")}
-                      className={`w-full py-3 px-4 sm:px-6 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center gap-3 ${
-                  activeSection === "family"
-                          ? "bg-primary-600 text-white shadow-lg"
-                          : "text-neutral-600 hover:text-primary-600 hover:bg-primary-50"
+                onClick={() => setActiveSection("core")}
+                className={`w-full py-3 px-4 sm:px-6 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center gap-3 ${
+                  activeSection === "core"
+                    ? "bg-primary-600 text-white shadow-lg"
+                    : "text-neutral-600 hover:text-primary-600 hover:bg-primary-50"
                 }`}
               >
-                <Heart className="w-5 h-5 flex-shrink-0" />
-                <span className="whitespace-nowrap">Our Family ({donors.length})</span>
+                <Users className="w-5 h-5 flex-shrink-0" />
+                <span className="whitespace-nowrap">Our Core Team ({coreTeam.length})</span>
               </button>
               <button
-                onClick={() => setActiveSection("team")}
-                      className={`w-full py-3 px-4 sm:px-6 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center gap-3 ${
-                  activeSection === "team"
-                          ? "bg-primary-600 text-white shadow-lg"
-                          : "text-neutral-600 hover:text-primary-600 hover:bg-primary-50"
+                onClick={() => setActiveSection("volunteers")}
+                className={`w-full py-3 px-4 sm:px-6 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center gap-3 ${
+                  activeSection === "volunteers"
+                    ? "bg-primary-600 text-white shadow-lg"
+                    : "text-neutral-600 hover:text-primary-600 hover:bg-primary-50"
                 }`}
               >
-                      <Users className="w-5 h-5 flex-shrink-0" />
-                <span className="whitespace-nowrap">Our Team ({volunteers.length})</span>
+                <Users className="w-5 h-5 flex-shrink-0" />
+                <span className="whitespace-nowrap">Volunteers ({volunteersOnly.length})</span>
               </button>
             </div>
           </div>
@@ -464,9 +408,8 @@ export default function OurFamilyPage() {
           </div>
         </section>
 
-        {/* Team Section */}
-        {activeSection === "team" && (
-          <section className="w-full bg-neutral-50 pt-8 pb-12 sm:pb-16 lg:pb-20 px-4 sm:px-6 lg:px-8">
+        {/* Team Section - Core Team or Volunteers */}
+        <section className="w-full bg-neutral-50 pt-8 pb-12 sm:pb-16 lg:pb-20 px-4 sm:px-6 lg:px-8">
             <div className="max-w-6xl mx-auto">
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -476,45 +419,47 @@ export default function OurFamilyPage() {
                 className="text-center mb-16"
               >
                 <h2 className="text-4xl font-bold text-primary-800 mb-6">
-                  Our Amazing Team
-              </h2>
+                  {activeSection === "core" ? "Our Core Team" : "Our Volunteers"}
+                </h2>
                 <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
-                  Meet the dedicated students from Rishihood University who bring our mission to life through their passion and commitment.
+                  {activeSection === "core"
+                    ? "The core team who lead and drive our mission forward."
+                    : "Dedicated volunteers from Rishihood University who bring our mission to life through their passion and commitment."}
                 </p>
               
-              {/* Search Bar for Team Section */}
+              {/* Search Bar */}
                 <div className="max-w-md mx-auto mt-8">
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Search team members by name, email, course..."
+                    placeholder="Search by name, email, course..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full px-4 py-3 pl-10 pr-4 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white text-neutral-900 shadow-sm"
+                    className="w-full px-4 py-3 pl-10 pr-4 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white text-neutral-900 shadow-sm"
                   />
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Search className="h-5 w-5 text-neutral-400" />
+                    <Search className="h-5 w-5 text-neutral-400" />
                   </div>
                   {searchTerm && (
                     <button
                       onClick={clearSearch}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-neutral-600"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-neutral-600"
                     >
-                        <X className="h-5 w-5" />
+                      <X className="h-5 w-5" />
                     </button>
                   )}
                 </div>
                 {searchTerm && (
-                    <p className="text-sm text-neutral-600 mt-2">
-                    Found {filteredVolunteers.length} team members
+                  <p className="text-sm text-neutral-600 mt-2">
+                    Found {displayedTeamList.length} {activeSection === "core" ? "core team" : "volunteer"} members
                   </p>
                 )}
               </div>
               </motion.div>
 
-            {filteredVolunteers.length > 0 ? (
+            {displayedTeamList.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-8 sm:mt-12">
-                  {filteredVolunteers.map((volunteer, index) => (
+                  {displayedTeamList.map((volunteer, index) => (
                     <motion.div 
                     key={volunteer.id}
                       initial={{ opacity: 0, y: 30 }}
@@ -524,10 +469,18 @@ export default function OurFamilyPage() {
                       className="bg-white rounded-2xl p-6 shadow-sm border border-primary-100 hover:shadow-lg transition-all duration-300 group"
                   >
                     <div className="text-center">
-                        <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-primary-200 transition-colors">
-                          <span className="text-xl text-primary-600 font-bold">
-                          {volunteer.name.charAt(0).toUpperCase()}
-                        </span>
+                        <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden bg-primary-100 group-hover:bg-primary-200 transition-colors shrink-0">
+                          {volunteer.image_url ? (
+                            <img
+                              src={volunteer.image_url}
+                              alt={volunteer.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-xl text-primary-600 font-bold">
+                              {volunteer.name.charAt(0).toUpperCase()}
+                            </span>
+                          )}
                       </div>
                         <h3 className="text-xl font-bold text-primary-800 mb-2">
                         {volunteer.name}
@@ -541,11 +494,11 @@ export default function OurFamilyPage() {
                         <div className="text-xs text-neutral-400 mb-3">
                         {volunteer.university_email}
                       </div>
-                      {volunteer.created_at && (
+                      {volunteer.created_at != null ? (
                           <div className="text-xs text-neutral-400 mb-3">
                           Joined on {formatDate(volunteer.created_at)}
                         </div>
-                      )}
+                      ) : null}
                       {volunteer.message && (
                           <div className="text-sm text-neutral-600 italic mb-3">
                             &ldquo;{volunteer.message}&rdquo;
@@ -554,24 +507,24 @@ export default function OurFamilyPage() {
                       <div className="mt-4">
                           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-700">
                             <Users className="w-3 h-3 mr-1" />
-                            Team Member
-                        </span>
+                            {activeSection === "core" ? "Core Team" : "Volunteer"}
+                          </span>
                       </div>
                     </div>
                     </motion.div>
                 ))}
               </div>
-            ) : volunteers.length > 0 ? (
+            ) : listForSection.length > 0 ? (
               <div className="text-center py-12">
                   <div className="w-16 h-16 bg-neutral-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
                     <Search className="w-8 h-8 text-neutral-400" />
                   </div>
                   <h3 className="text-2xl font-bold text-neutral-700 mb-4">
-                  No team members found
-                </h3>
+                    No {activeSection === "core" ? "core team" : "volunteer"} members found
+                  </h3>
                   <p className="text-neutral-600">
-                  Try adjusting your search terms or filters.
-                </p>
+                    Try adjusting your search terms.
+                  </p>
               </div>
             ) : (
               <div className="text-center py-12">
@@ -580,169 +533,26 @@ export default function OurFamilyPage() {
                       <Users className="w-8 h-8 text-primary-600" />
                     </div>
                     <h3 className="text-2xl font-bold text-primary-800 mb-4">
-                    Join Our Amazing Team!
-                  </h3>
+                      {activeSection === "core" ? "No core team members yet" : "Join Our Amazing Team!"}
+                    </h3>
                     <p className="text-neutral-600 mb-8 max-w-2xl mx-auto">
-                      We&apos;re looking for passionate volunteers to join our mission. 
-                    Be part of our team and help us make a real difference in our community.
-                  </p>
-                    <Button
-                      onClick={() => window.location.href = '/joinUs'}
-                      className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-lg"
-                  >
-                    Join Our Team
-                    </Button>
-                </div>
-              </div>
-            )}
-          </div>
-          </section>
-        )}
-
-        {/* Family Section */}
-        {activeSection === "family" && (
-          <section className="w-full bg-neutral-50 pt-8 pb-12 sm:pb-16 lg:pb-20 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-6xl mx-auto">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8 }}
-                className="text-center mb-16"
-              >
-                <h2 className="text-4xl font-bold text-primary-800 mb-6">
-                  Our Beloved Family
-              </h2>
-                <p className="text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed">
-                  These generous souls have opened their hearts and supported our mission. Every donation makes a meaningful difference.
-                </p>
-              
-              {/* Search Bar for Family Section */}
-                <div className="max-w-md mx-auto mt-8">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search family members by name, ID..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full px-4 py-3 pl-10 pr-4 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white text-neutral-900 shadow-sm"
-                  />
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Search className="h-5 w-5 text-neutral-400" />
-                  </div>
-                  {searchTerm && (
-                    <button
-                      onClick={clearSearch}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-neutral-600"
-                    >
-                        <X className="h-5 w-5" />
-                    </button>
-                  )}
-                </div>
-                {searchTerm && (
-                    <p className="text-sm text-neutral-600 mt-2">
-                    Found {filteredDonors.length} family members
-                  </p>
-                )}
-              </div>
-              </motion.div>
-
-            {filteredDonors.length > 0 ? (
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.8 }}
-                  className="bg-white rounded-2xl shadow-sm border border-primary-100 overflow-hidden mt-8 sm:mt-12"
-                >
-                <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-primary-200 scrollbar-track-gray-100">
-                  <table className="w-full">
-                      <thead className="bg-primary-50">
-                      <tr>
-                          <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-primary-700 uppercase tracking-wider">
-                          S.No
-                        </th>
-                          <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-primary-700 uppercase tracking-wider">
-                          Name
-                        </th>
-                          <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-primary-700 uppercase tracking-wider">
-                          Joined Date
-                        </th>
-                      </tr>
-                    </thead>
-                      <tbody className="bg-white divide-y divide-neutral-200">
-                      {filteredDonors.map((donor, index) => (
-                        <tr 
-                          key={donor.id}
-                            className={`hover:bg-primary-50 transition-colors duration-200 ${
-                              index % 2 === 0 ? 'bg-white' : 'bg-neutral-50'
-                          }`}
-                        >
-                            <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-neutral-900 font-medium">
-                            {index + 1}
-                          </td>
-                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                                <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center mr-4">
-                                  <span className="text-primary-600 font-bold text-sm">
-                                  {donor.name.charAt(0).toUpperCase()}
-                                </span>
-                              </div>
-                              <div>
-                                  <div className="text-sm font-medium text-neutral-900">
-                                  {donor.name}
-                                </div>
-                                  <div className="text-sm text-neutral-500">
-                                  ID: {donor.id}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">
-                            {formatDate(donor.created_at)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                </motion.div>
-            ) : donors.length > 0 ? (
-              <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-neutral-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <Search className="w-8 h-8 text-neutral-400" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-neutral-700 mb-4">
-                  No family members found
-                </h3>
-                  <p className="text-neutral-600">
-                  Try adjusting your search terms or filters.
-                </p>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                  <div className="bg-primary-50 rounded-3xl p-8 border border-primary-200">
-                    <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                      <Heart className="w-8 h-8 text-primary-600" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-primary-800 mb-4">
-                  Be the First to Join Our Family!
-                </h3>
-                    <p className="text-neutral-600 mb-8">
-                      We&apos;re waiting for amazing people like you to join our mission.
+                      {activeSection === "core"
+                        ? "Core team members are marked in the admin panel. Check back later."
+                        : "We're looking for passionate volunteers to join our mission. Be part of our team and help us make a real difference."}
                     </p>
-                    <Button
-                      onClick={() => window.location.href = '/donate'}
-                      className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-lg"
-                >
-                  Make Your First Donation
-                    </Button>
-                  </div>
+                    {activeSection === "volunteers" && (
+                      <Button
+                        onClick={() => window.location.href = '/joinUs'}
+                        className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-lg"
+                      >
+                        Join Our Team
+                      </Button>
+                    )}
+                </div>
               </div>
             )}
           </div>
-          </section>
-        )}
+        </section>
 
       </div>
 

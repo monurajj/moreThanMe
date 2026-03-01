@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Button from "../components/Button";
 import { Users, HeartHandshake, GraduationCap } from "lucide-react";
@@ -7,21 +8,41 @@ import PhotoGallery from "../components/PhotoGallery";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-
-
-const photos = [
-  { src: "/bookdonation.jpg", alt: "bookdonation to read india libbrary", category: "Education", tags: ["book donation", "library", "education"], description: "Book donation to Read India Library." },
-  { src: "/diwali1.mp4", alt: "Diwali Celebration 1", category: "Celebration", tags: ["diwali celebration"], description: "Celebrating Diwali with the community." },
-  { src: "/diwali2.mp4", alt: "Diwali Celebration 2", category: "Celebration", tags: ["diwali celebration"], description: "Diwali festivities and joy." },
-  { src: "/diwali3.jpg", alt: "Diwali Celebration 3", category: "Celebration", tags: ["diwali celebration"], description: "Diwali celebrations with lights and decorations." },
-  { src: "/diwali4.mp4", alt: "Diwali Celebration 4", category: "Celebration", tags: ["diwali celebration"], description: "Community Diwali celebration." },
-  { src: "/diwali5.mp4", alt: "Diwali Celebration 5", category: "Celebration", tags: ["diwali celebration"], description: "Sharing Diwali joy with everyone." },
-  { src: "/diwali6.mp4", alt: "Diwali Celebration 6", category: "Celebration", tags: ["diwali celebration"], description: "Diwali moments and memories." },
-  { src: "/galleryImage01.jpeg", alt: "Read India Library", category: "Education", tags: [], description: "" },
-  { src: "/galleryImage02.jpeg", alt: "Health Camp", category: "Health", tags: [], description: "" },
-];
+const HERO_IMAGE = "/hero.jpg";
 
 export default function Home() {
+  const [photos, setPhotos] = useState<{ src: string; alt: string; category: string; tags: string[]; description: string }[]>([]);
+  const [aboutImageUrl, setAboutImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/assets?home=true")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setPhotos(
+            data.map((a: { url: string; alt: string | null; title: string | null; category: string; description: string | null; tags?: string[] }) => ({
+              src: a.url,
+              alt: a.alt || a.title || "Gallery",
+              category: a.category || "General",
+              tags: Array.isArray(a.tags) ? a.tags : [],
+              description: a.description || "",
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/assets")
+      .then((r) => r.json())
+      .then((data) => {
+        const aboutImg = Array.isArray(data) ? data.find((a: { category?: string }) => a.category === "About") : null;
+        if (aboutImg?.url) setAboutImageUrl(aboutImg.url);
+        else if (Array.isArray(data) && data.length > 0) setAboutImageUrl(data[0].url);
+      })
+      .catch(() => {});
+  }, []);
   const router = useRouter();
   const handleJoin = () => {
     router.push("/joinUs");
@@ -31,30 +52,29 @@ export default function Home() {
   }
 
   return (
-    <main>
-      {/* Hero Section */}
-      <section className="relative w-full min-h-screen flex flex-col bg-neutral-800 hero-section" style={{ marginTop: '-10rem', top: 0 }}>
+    <main className="overflow-x-hidden">
+      {/* Hero Section - full viewport width, starts below navbar */}
+      <section className="relative w-full min-w-full min-h-screen flex flex-col bg-neutral-800 hero-section overflow-hidden">
         {/* Hero Content Wrapper */}
-        <div className="flex-1 flex items-center relative">
-          {/* Background Image */}
-          <div className="absolute inset-0 w-full h-full z-0" style={{ top: '-2px', height: 'calc(100% + 2px)' }}>
+        <div className="flex-1 flex items-center relative min-w-full">
+          {/* Background Image - local file in public folder */}
+          <div className="absolute inset-0 left-0 right-0 w-full min-w-full z-0 bg-neutral-800">
             <Image
-              src="https://res.cloudinary.com/dpuhlmcth/image/upload/v1753466891/DSC1803-scaled_enhcsi.jpg"
+              src={HERO_IMAGE}
               alt="Children smiling"
-              layout="fill"
-              objectFit="cover"
-              objectPosition="center"
-              className="w-full h-full opacity-90"
+              fill
+              sizes="100vw"
+              className="object-cover object-center w-full h-full opacity-90"
             />
           </div>
           {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30 z-10" style={{ top: '-2px', height: 'calc(100% + 2px)' }} />
-          {/* Content */}
+          <div className="absolute inset-0 left-0 right-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30 z-10" />
+          {/* Content - padded below navbar so it doesn't get covered */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="relative z-20 flex flex-col justify-center px-4 sm:px-8 lg:px-16 xl:px-24 py-12 sm:py-16 w-full max-w-3xl sm:max-w-4xl mt-20 sm:mt-24 text-center md:text-left items-center md:items-start"
+            className="relative z-20 flex flex-col justify-center px-4 sm:px-8 lg:px-16 xl:px-24 py-12 sm:py-16 w-full max-w-3xl sm:max-w-4xl pt-28 sm:pt-32 text-center md:text-left items-center md:items-start"
           >
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -81,7 +101,7 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.6 }}
               className="text-lg sm:text-xl md:text-2xl text-neutral-200 mb-6 sm:mb-8 max-w-2xl leading-relaxed"
             >
-              A student-driven movement from Rishihood University, giving back to India—one act of kindness at a time.
+              A student-driven movement from Rishihood University <span className="text-gray-400">&</span> Newton School of Technology, giving back to India—one act of kindness at a time.
             </motion.p>
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -198,25 +218,27 @@ export default function Home() {
               </motion.div>
             </div>
 
-            {/* Right: Image */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className="flex-1 max-w-lg"
-            >
-              <div className="relative">
-                <Image
-                  src="/aboutusImage.png"
-                  alt="Children playing outdoors"
-                  width={500}
-                  height={400}
-                  className="rounded-2xl shadow-lg object-cover w-full h-auto"
-                />
-                <div className="absolute -inset-2 bg-primary-100/50 rounded-2xl -z-10"></div>
-              </div>
-            </motion.div>
+            {/* Right: Image - from media_assets */}
+            {aboutImageUrl && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                className="flex-1 max-w-lg"
+              >
+                <div className="relative">
+                  <Image
+                    src={aboutImageUrl}
+                    alt="Children playing outdoors"
+                    width={500}
+                    height={400}
+                    className="rounded-2xl shadow-lg object-cover w-full h-auto"
+                  />
+                  <div className="absolute -inset-2 bg-primary-100/50 rounded-2xl -z-10"></div>
+                </div>
+              </motion.div>
+            )}
           </motion.div>
         </div>
       </section>
@@ -425,7 +447,11 @@ export default function Home() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <PhotoGallery photos={photos} />
+            {photos.length > 0 ? (
+              <PhotoGallery photos={photos} />
+            ) : (
+              <p className="text-center text-neutral-500 py-12">No gallery images yet. Add media in the admin panel.</p>
+            )}
           </motion.div>
         </div>
       </section>

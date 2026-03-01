@@ -5,6 +5,7 @@ import { Heart, Users, Gift } from "lucide-react";
 import DonationForm from "../../components/DonationForm";
 import DonationStats from "../../components/DonationStats";
 import HeartProgress from "../../components/HeartProgress";
+import DonorList from "../../components/DonorList";
 
 export default function DonatePage() {
   return (
@@ -123,6 +124,31 @@ export default function DonatePage() {
               </p>
               
               <DonationStats />
+            </div>
+          </div>
+        </motion.section>
+
+        {/* Our Donors Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="mb-16 lg:mb-20"
+        >
+          <div className="bg-white rounded-2xl shadow-sm border border-primary-100 p-8 sm:p-12 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary-50 rounded-full -translate-y-16 translate-x-16 opacity-40" />
+            <div className="relative z-10">
+              <span className="inline-flex items-center px-4 py-2 rounded-full bg-primary-100 text-primary-700 text-sm font-medium mb-6">
+                Our Supporters
+              </span>
+              <h3 className="text-3xl sm:text-4xl font-bold mb-6 text-primary-800">
+                Our Donors
+              </h3>
+              <p className="text-lg text-neutral-600 mb-8 max-w-3xl leading-relaxed">
+                Every name here represents a generous heart. Thank you to everyone who has supported our mission.
+              </p>
+              <DonorList />
             </div>
           </div>
         </motion.section>

@@ -1,6 +1,5 @@
 "use client"
 import { useState, useRef } from "react";
-import { supabase } from "../lib/supabaseClient";
 import Button from "./Button";
 import QRCodeGenerator from "./QRCodeGenerator";
 import Image from "next/image";
@@ -62,32 +61,21 @@ export default function DonationForm() {
   // UPI ID for donations - replace with your actual UPI ID
   const upiId = "mk10092004-1@oksbi"; // Your NGO's UPI ID for verification
 
-  // Check for duplicate transaction and verify UPI
   const checkDuplicateAndVerify = async (transactionId: string, toUpiId?: string) => {
     try {
-      // Check if transaction already exists
-      const { data: existingDonation, error: checkError } = await supabase
-        .from("donations")
-        .select("id, status")
-        .eq("transaction_id", transactionId)
-        .single();
-
-      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
-        console.error("❌ Error checking duplicate:", checkError);
-        throw checkError;
-      }
-
-      if (existingDonation) {
+      const res = await fetch("/api/donations/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transaction_id: transactionId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data.exists) {
         throw new Error(`Transaction ID ${transactionId} already exists in our database.`);
       }
-
-      // Verify UPI ID if provided
       if (toUpiId) {
-        const isVerified = toUpiId.toLowerCase() === upiId.toLowerCase();
-        return isVerified;
+        return toUpiId.toLowerCase() === upiId.toLowerCase();
       }
-
-      return false; // No UPI to verify
+      return false;
     } catch (err) {
       console.error("❌ Error in duplicate/verification check:", err);
       throw err;
@@ -279,16 +267,24 @@ export default function DonationForm() {
         throw new Error("Valid donation amount is required");
       }
 
-      const { error: insertError } = await supabase
-        .from("donations")
-        .insert([donationData])
-        .select();
-      
-      if (insertError) {
-        console.error("❌ SUBMIT - Supabase Insert Error:", insertError);
-        console.error("❌ SUBMIT - Error details:", insertError.message);
-        console.error("❌ SUBMIT - Error code:", insertError.code);
-        throw insertError;
+      const insertRes = await fetch("/api/donations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: donationData.name,
+          amount: donationData.amount,
+          transaction_id: donationData.transaction_id,
+          phone: donationData.phone,
+          message: donationData.message,
+          status: donationData.status,
+          receipt_processing_status: donationData.receipt_processing_status,
+          receipt_confidence: donationData.receipt_confidence,
+          receipt_parsed_data: donationData.receipt_parsed_data,
+        }),
+      });
+      if (!insertRes.ok) {
+        const errData = await insertRes.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to submit donation");
       }
       
       // Store the submitted data for the success message before resetting

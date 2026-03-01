@@ -1,69 +1,54 @@
-"use client"
+"use client";
 import Image from "next/image";
 import { ProjectCard } from "../../components/ProjectCard";
 import Button from "../../components/Button";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
-const projects = [
-  {
-    title: "Education for Every Child",
-    description:
-      "We provide scholarships, mentorship, and school supplies to children from underserved communities, ensuring that no dream is left behind.",
-    location: "Sonipat & Nearby Villages",
-    budget: "₹2,00,000",
-    status: "Ongoing",
-    progress: 85,
-  },
-  {
-    title: "Health & Hygiene Camps",
-    description:
-      "Our student volunteers organize health checkups, awareness drives, and distribute hygiene kits to promote well-being in rural and urban slums.",
-    location: "Sonipat, Haryana",
-    budget: "₹1,20,000",
-    status: "Seasonal",
-    progress: 60,
-  },
-  {
-    title: "Community Empowerment",
-    description:
-      "We empower women and youth through skill-building workshops, financial literacy sessions, and leadership training, fostering self-reliance.",
-    location: "Rishihood University & Partner Communities",
-    budget: "₹80,000",
-    status: "Ongoing",
-    progress: 70,
-  },
-  {
-    title: "Youth Leadership Incubator",
-    description:
-      "Our flagship program develops the next generation of changemakers by giving students hands-on experience in social projects and grassroots leadership.",
-    location: "Rishihood University Campus",
-    budget: "₹50,000",
-    status: "Annual",
-    progress: 90,
-  },
-  {
-    title: "Green India Initiative",
-    description:
-      "From tree plantation drives to clean-up campaigns, we inspire environmental stewardship and climate action among youth and local residents.",
-    location: "Sonipat & Surroundings",
-    budget: "₹30,000",
-    status: "Ongoing",
-    progress: 40,
-  },
-];
+type Project = {
+  title: string;
+  description: string;
+  location: string;
+  budget: string;
+  status: string;
+  progress: number;
+};
 
 export default function WhatWeDoPage() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [heroUrl, setHeroUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/projects")
+      .then((r) => r.json())
+      .then((d) => Array.isArray(d) && setProjects(d))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/assets")
+      .then((r) => r.json())
+      .then((d) => {
+        const aboutImg = Array.isArray(d) ? d.find((a: { category?: string }) => a.category === "About") : null;
+        if (aboutImg?.url) setHeroUrl(aboutImg.url);
+        else if (Array.isArray(d) && d.length > 0) setHeroUrl(d[0].url);
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <main>
       {/* Hero Section */}
       <section className="relative w-full min-h-[50vh] flex items-center justify-center bg-gradient-to-br from-blue-100 to-white dark:from-blue-950 dark:to-gray-950 rounded-3xl shadow-lg my-12 overflow-hidden">
-        <Image
-          src="/whatwedoImage.png"
-          alt="What We Do"
-          fill
-          className="object-cover object-center opacity-70"
-          style={{ zIndex: 1 }}
-        />
+        {heroUrl && (
+          <Image
+            src={heroUrl}
+            alt="What We Do"
+            fill
+            className="object-cover object-center opacity-70"
+            style={{ zIndex: 1 }}
+          />
+        )}
         <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 py-20 w-full max-w-3xl">
           <h1 className="text-5xl md:text-6xl font-extrabold text-primary mb-4 drop-shadow-lg">
             What We Do
@@ -79,38 +64,27 @@ export default function WhatWeDoPage() {
         <h2 className="text-3xl md:text-4xl font-bold mb-10 text-center text-primary">
           Our Key Initiatives
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {projects.map((project) => (
-            <ProjectCard key={project.title} {...project} />
-          ))}
-        </div>
+        {projects.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {projects.map((project) => (
+              <ProjectCard key={project.title} {...project} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-neutral-500 py-12">No projects yet. Add projects in the admin panel.</p>
+        )}
       </section>
 
-      {/* Impact Stats */}
+      {/* Impact Stats - from donations API */}
       <section className="w-full max-w-6xl mx-auto py-16 px-4 text-center">
         <h2 className="text-3xl md:text-4xl font-bold mb-8 text-primary">
           Our Impact
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div>
-            <p className="text-5xl font-extrabold mb-2 text-blue-600">500+</p>
-            <p className="text-xl font-semibold">Volunteers Mobilized</p>
-          </div>
-          <div>
-            <p className="text-5xl font-extrabold mb-2 text-green-600">20+</p>
-            <p className="text-xl font-semibold">Projects Completed</p>
-          </div>
-          <div>
-            <p className="text-5xl font-extrabold mb-2 text-purple-600">10,000+</p>
-            <p className="text-xl font-semibold">Lives Touched</p>
-          </div>
-        </div>
+        <ImpactStats />
         <p className="text-lg text-gray-600 dark:text-gray-300 mt-8 max-w-2xl mx-auto">
           Every number is a story—of a child going to school, a family receiving care, a student discovering purpose, and a community growing stronger. Our impact is measured in hope, not just statistics.
         </p>
       </section>
-
-
 
       {/* Call to Action */}
       <section className="w-full bg-blue-700 dark:bg-blue-900 text-white py-20 text-center">
@@ -118,7 +92,7 @@ export default function WhatWeDoPage() {
           Join the Movement. Be the Change.
         </h2>
         <p className="text-xl md:text-2xl mb-10 max-w-2xl mx-auto">
-          Whether you’re a student, mentor, or supporter, your involvement fuels our mission. Together, we can create ripples of kindness that reach every corner of our society.
+          Whether you&apos;re a student, mentor, or supporter, your involvement fuels our mission. Together, we can create ripples of kindness that reach every corner of our society.
         </p>
         <div className="flex flex-col md:flex-row justify-center gap-4">
           <Link href="/donate">
@@ -131,4 +105,35 @@ export default function WhatWeDoPage() {
       </section>
     </main>
   );
-} 
+}
+
+function ImpactStats() {
+  const [stats, setStats] = useState<{ totalDonors?: number; totalAmount?: number }>({});
+
+  useEffect(() => {
+    fetch("/api/donations/stats")
+      .then((r) => r.json())
+      .then(setStats)
+      .catch(() => {});
+  }, []);
+
+  const donors = stats.totalDonors ?? 0;
+  const amount = stats.totalAmount ?? 0;
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div>
+        <p className="text-5xl font-extrabold mb-2 text-blue-600">{donors}+</p>
+        <p className="text-xl font-semibold">Donors</p>
+      </div>
+      <div>
+        <p className="text-5xl font-extrabold mb-2 text-green-600">₹{(amount / 1000).toFixed(0)}K+</p>
+        <p className="text-xl font-semibold">Raised</p>
+      </div>
+      <div>
+        <p className="text-5xl font-extrabold mb-2 text-purple-600">Growing</p>
+        <p className="text-xl font-semibold">Community</p>
+      </div>
+    </div>
+  );
+}

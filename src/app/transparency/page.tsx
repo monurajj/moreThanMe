@@ -1,12 +1,30 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Shield, TrendingUp } from "lucide-react";
+import { Shield, TrendingUp, DollarSign, Calendar } from "lucide-react";
 import Button from "../../components/Button";
 import { useRouter } from "next/navigation";
 
+type TransparencyData = {
+  total_funding: number;
+  total_expenditure: number;
+  remaining_balance: number;
+  monthly_expenditure: { month_key: string; month_label: string; total: number }[];
+};
+
 export default function TransparencyPage() {
   const router = useRouter();
+  const [data, setData] = useState<TransparencyData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/transparency")
+      .then((r) => r.json())
+      .then(setData)
+      .catch(() => setData(null))
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <main>
@@ -61,8 +79,154 @@ export default function TransparencyPage() {
         </div>
       </section>
 
+      {/* The Right Time is Now – quote section (top of page) */}
+      <section className="w-full bg-gradient-to-br from-primary-800 via-primary-700 to-primary-600 py-32 px-4 relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-48 translate-x-48"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-32 -translate-x-32"></div>
+        </div>
+        <div className="max-w-6xl mx-auto relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center"
+          >
+            <div className="lg:col-span-8">
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-medium mb-8 border border-white/20">
+                  The Right Time is Now
+                </span>
+                <blockquote className="relative">
+                  <div className="absolute -top-4 -left-4 text-6xl text-white/20 font-serif leading-none">&ldquo;</div>
+                  <p className="text-3xl lg:text-4xl xl:text-5xl font-light text-white mb-8 leading-tight relative pl-8">
+                    The best time to plant a tree was{" "}
+                    <span className="font-medium text-orange-200">20 years ago</span>. 
+                    The second best time is{" "}
+                    <span className="font-medium text-orange-200">now</span>.
+                  </p>
+                  <div className="absolute -bottom-4 -right-4 text-6xl text-white/20 font-serif leading-none rotate-180">&rdquo;</div>
+                </blockquote>
+                <motion.footer
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                  className="flex items-center gap-4 pl-8"
+                >
+                  <div className="w-12 h-0.5 bg-orange-300"></div>
+                  <span className="text-xl text-orange-100 font-medium">Chinese Proverb</span>
+                </motion.footer>
+              </motion.div>
+            </div>
+            <div className="lg:col-span-4 flex justify-center lg:justify-end">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                className="relative"
+              >
+                <div className="w-48 h-48 lg:w-64 lg:h-64 rounded-full bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-sm border border-white/30 flex items-center justify-center relative overflow-hidden">
+                  <div className="absolute inset-4 rounded-full bg-gradient-to-br from-orange-300/30 to-transparent"></div>
+                  <div className="relative z-10 text-center">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/20 flex items-center justify-center">
+                      <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                    </div>
+                    <div className="text-white/80 text-sm font-medium">Plant</div>
+                    <div className="text-orange-200 text-xs">Today</div>
+                  </div>
+                  <div className="absolute top-8 right-8 w-2 h-2 bg-orange-300/60 rounded-full animate-pulse"></div>
+                  <div className="absolute bottom-12 left-8 w-1.5 h-1.5 bg-white/60 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+                  <div className="absolute top-16 left-12 w-1 h-1 bg-orange-200/80 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Monthly expenditure – where your money goes */}
+      <section className="w-full bg-neutral-50 py-24 px-4 border-t border-neutral-100">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12"
+          >
+            <span className="inline-flex items-center px-4 py-2 rounded-full bg-primary-100 text-primary-700 text-sm font-medium mb-6">
+              Financial transparency
+            </span>
+            <h2 className="text-3xl lg:text-4xl font-bold text-primary-800 mb-4">
+              Where Your Support Goes
+            </h2>
+            <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
+              All funds come from donations. Here is how much we spent each month so you can see how your contribution is used.
+            </p>
+          </motion.div>
+
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <div className="w-10 h-10 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : data && (data.monthly_expenditure?.length > 0 || data.total_funding > 0) ? (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+                <div className="bg-primary-50 rounded-xl p-5 border border-primary-100 text-center">
+                  <DollarSign className="w-8 h-8 text-primary-600 mx-auto mb-2" />
+                  <p className="text-sm text-primary-700 font-medium">Total funding (donations)</p>
+                  <p className="text-xl font-bold text-primary-800">₹{(data.total_funding ?? 0).toLocaleString("en-IN")}</p>
+                </div>
+                <div className="bg-neutral-50 rounded-xl p-5 border border-neutral-200 text-center">
+                  <TrendingUp className="w-8 h-8 text-neutral-600 mx-auto mb-2" />
+                  <p className="text-sm text-neutral-600 font-medium">Total spent</p>
+                  <p className="text-xl font-bold text-neutral-800">₹{(data.total_expenditure ?? 0).toLocaleString("en-IN")}</p>
+                </div>
+                <div className="bg-primary-50 rounded-xl p-5 border border-primary-100 text-center">
+                  <Shield className="w-8 h-8 text-primary-600 mx-auto mb-2" />
+                  <p className="text-sm text-primary-700 font-medium">Remaining balance</p>
+                  <p className="text-xl font-bold text-primary-800">₹{(data.remaining_balance ?? 0).toLocaleString("en-IN")}</p>
+                </div>
+              </div>
+
+              <h3 className="text-xl font-semibold text-primary-800 mb-4 flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                Monthly expenditure
+              </h3>
+              {data.monthly_expenditure?.length > 0 ? (
+                <ul className="space-y-3">
+                  {data.monthly_expenditure.map((row) => (
+                    <li
+                      key={row.month_key}
+                      className="flex flex-wrap items-center justify-between gap-4 bg-white rounded-xl px-5 py-4 border border-neutral-200"
+                    >
+                      <span className="font-medium text-neutral-800">{row.month_label}</span>
+                      <span className="text-primary-700 font-semibold">₹{row.total.toLocaleString("en-IN")}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-neutral-500 py-6">No expenditure recorded yet. We will update this as we use funds for initiatives.</p>
+              )}
+            </>
+          ) : (
+            <p className="text-center text-neutral-500 py-8">Transparency data will appear here once we have donation and expenditure records.</p>
+          )}
+        </div>
+      </section>
+
       {/* Impact in the Making Section */}
-      <section className="w-full bg-neutral-50 py-24 px-4">
+      <section className="w-full bg-white py-24 px-4">
         <div className="max-w-5xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -119,93 +283,6 @@ export default function TransparencyPage() {
               
               <div className="w-16 h-1 bg-primary-600 rounded-full mx-auto mt-8"></div>
             </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Chinese Proverb Quote Section */}
-      <section className="w-full bg-gradient-to-br from-primary-800 via-primary-700 to-primary-600 py-32 px-4 relative overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-48 translate-x-48"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-32 -translate-x-32"></div>
-        </div>
-        
-        <div className="max-w-6xl mx-auto relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center"
-          >
-            {/* Left: Content */}
-            <div className="lg:col-span-8">
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              >
-                <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-medium mb-8 border border-white/20">
-                  The Right Time is Now
-                </span>
-                
-                <blockquote className="relative">
-                  <div className="absolute -top-4 -left-4 text-6xl text-white/20 font-serif leading-none">&ldquo;</div>
-                  <p className="text-3xl lg:text-4xl xl:text-5xl font-light text-white mb-8 leading-tight relative pl-8">
-                    The best time to plant a tree was{" "}
-                    <span className="font-medium text-orange-200">20 years ago</span>. 
-                    The second best time is{" "}
-                    <span className="font-medium text-orange-200">now</span>.
-                  </p>
-                  <div className="absolute -bottom-4 -right-4 text-6xl text-white/20 font-serif leading-none rotate-180">&rdquo;</div>
-                </blockquote>
-                
-                <motion.footer
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: 0.4 }}
-                  className="flex items-center gap-4 pl-8"
-                >
-                  <div className="w-12 h-0.5 bg-orange-300"></div>
-                  <span className="text-xl text-orange-100 font-medium">Chinese Proverb</span>
-                </motion.footer>
-              </motion.div>
-            </div>
-            
-            {/* Right: Visual Element */}
-            <div className="lg:col-span-4 flex justify-center lg:justify-end">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.3 }}
-                className="relative"
-              >
-                <div className="w-48 h-48 lg:w-64 lg:h-64 rounded-full bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-sm border border-white/30 flex items-center justify-center relative overflow-hidden">
-                  {/* Inner glow */}
-                  <div className="absolute inset-4 rounded-full bg-gradient-to-br from-orange-300/30 to-transparent"></div>
-                  
-                  {/* Center icon/symbol */}
-                  <div className="relative z-10 text-center">
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/20 flex items-center justify-center">
-                      <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                      </svg>
-                    </div>
-                    <div className="text-white/80 text-sm font-medium">Plant</div>
-                    <div className="text-orange-200 text-xs">Today</div>
-                  </div>
-                  
-                  {/* Floating particles */}
-                  <div className="absolute top-8 right-8 w-2 h-2 bg-orange-300/60 rounded-full animate-pulse"></div>
-                  <div className="absolute bottom-12 left-8 w-1.5 h-1.5 bg-white/60 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
-                  <div className="absolute top-16 left-12 w-1 h-1 bg-orange-200/80 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
-                </div>
-              </motion.div>
-            </div>
           </motion.div>
         </div>
       </section>
