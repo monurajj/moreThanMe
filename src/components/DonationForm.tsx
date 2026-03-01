@@ -58,10 +58,22 @@ export default function DonationForm() {
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // UPI ID for donations - replace with your actual UPI ID
-  const upiId = "mk10092004-1@oksbi"; // Your NGO's UPI ID for verification
+  // NGO UPI ID for display and verification
+  const upiId = "8088133722@kotakbank";
+  const expectedUpiLast4 = "3722"; // last 4 digits (receipts often show masked: ****3722@kotak)
 
-  const checkDuplicateAndVerify = async (transactionId: string, toUpiId?: string) => {
+  const isUpiMatching = (toUpiId: string | null | undefined): boolean => {
+    if (!toUpiId) return false;
+    const upiPart = toUpiId.split("@")[0] || "";
+    const last4 = upiPart.slice(-4);
+    return last4 === expectedUpiLast4;
+  };
+
+  const checkDuplicateAndVerify = async (
+    transactionId: string,
+    recipientName?: string | null,
+    toUpiId?: string | null
+  ) => {
     try {
       const res = await fetch("/api/donations/check", {
         method: "POST",
@@ -72,10 +84,13 @@ export default function DonationForm() {
       if (data.exists) {
         throw new Error(`Transaction ID ${transactionId} already exists in our database.`);
       }
-      if (toUpiId) {
-        return toUpiId.toLowerCase() === upiId.toLowerCase();
-      }
-      return false;
+      // Verify only when we have receipt-extracted data
+      if (!recipientName || !toUpiId) return false;
+      // Banking name must match (case-insensitive): "AKASH G" or "AKASH"
+      const nameUpper = recipientName.toUpperCase().trim();
+      const nameMatch = nameUpper.includes("AKASH G") || nameUpper.includes("AKASH");
+      const upiMatch = isUpiMatching(toUpiId);
+      return nameMatch && upiMatch;
     } catch (err) {
       console.error("❌ Error in duplicate/verification check:", err);
       throw err;
@@ -127,24 +142,31 @@ export default function DonationForm() {
         body: uploadFormData,
       });
 
-      const result = await response.json();
+      let result: { error?: string; details?: string; success?: boolean; data?: ReceiptData; quotaExceeded?: boolean; serviceUnavailable?: boolean } = {};
+      try {
+        const text = await response.text();
+        result = text ? JSON.parse(text) : {};
+      } catch {
+        result = { error: 'Invalid response from server' };
+      }
 
       if (!response.ok) {
-        console.error("API Error Response:", result);
-        
-        // Handle OCR processing error
+        const errMsg = result.error || result.details || 'Failed to process receipt';
         if (result.quotaExceeded || result.serviceUnavailable) {
-          throw new Error("Claude 3.5 Sonnet service is temporarily unavailable. Please try again later.");
+          throw new Error("Receipt processing is temporarily unavailable. Please try again in a few minutes.");
         }
-        
-        throw new Error(result.error || result.details || 'Failed to process receipt');
+        if (Object.keys(result).length > 0) {
+          console.error("Receipt API error:", result);
+        }
+        throw new Error(errMsg);
       }
 
       if (result.success && result.data) {
-        setReceiptData(result.data);
+        const receiptDataRes = result.data as ReceiptData;
+        setReceiptData(receiptDataRes);
         
         // Auto-fill form with extracted data if confidence is high enough
-        if (result.data.confidence && result.data.confidence > 0.7) {
+        if (receiptDataRes.confidence && receiptDataRes.confidence > 0.7) {
           // Helper function to parse amount for auto-fill
           const parseAmountForForm = (amount: string | number | null | undefined): number => {
             
@@ -165,15 +187,15 @@ export default function DonationForm() {
             return isNaN(parsed) ? 0 : parsed;
           };
 
-          const parsedAmount = parseAmountForForm(result.data.amount);
+          const parsedAmount = parseAmountForForm(receiptDataRes.amount);
           
           setFormData(prev => {
             const newFormData = {
               ...prev,
               amount: parsedAmount || prev.amount,
-              transactionId: result.data.transaction_id || prev.transactionId,
-              name: result.data.sender_name || prev.name,
-              phone: result.data.sender_phone || prev.phone
+              transactionId: receiptDataRes.transaction_id || prev.transactionId,
+              name: receiptDataRes.sender_name || prev.name,
+              phone: receiptDataRes.sender_phone || prev.phone
             };
             return newFormData;
           });
@@ -181,7 +203,7 @@ export default function DonationForm() {
           // Auto-submit after data extraction
           setTimeout(() => {
             // Pass the receipt data directly to avoid state timing issues
-            handleSubmitWithData({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>, result.data);
+            handleSubmitWithData({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>, receiptDataRes);
           }, 1000); // Auto-submit after 1 second
         }
 
@@ -204,12 +226,13 @@ export default function DonationForm() {
       // Use override data if provided, otherwise use state
       const finalReceiptData = receiptDataOverride || receiptData;
       
-      // Get transaction ID and UPI for verification
+      // Get transaction ID and receipt data for verification
       const transactionId = finalReceiptData?.transaction_id || formData.transactionId;
-      const toUpiId = finalReceiptData?.to_upi_id || undefined;
+      const recipientName = finalReceiptData?.recipient_name || null;
+      const toUpiId = finalReceiptData?.to_upi_id || null;
 
-      // Check for duplicate and verify UPI
-      const isVerified = await checkDuplicateAndVerify(transactionId, toUpiId);
+      // Check for duplicate and verify: banking name (AKASH G) + last 4 digits of to UPI (3722)
+      const isVerified = await checkDuplicateAndVerify(transactionId, recipientName, toUpiId);
 
       // Prepare donation data with all UPI fields
       // Helper function to parse amount from various formats
@@ -257,7 +280,7 @@ export default function DonationForm() {
         payment_date_time: finalReceiptData?.date_time || null,
         payment_method: finalReceiptData?.payment_method || null,
         // Metadata
-        ai_model_used: "anthropic/claude-3.5-sonnet",
+        ai_model_used: "gemini-2.0-flash",
         processing_time_ms: null // Will be set if we track processing time
       };
 
@@ -280,6 +303,7 @@ export default function DonationForm() {
           receipt_processing_status: donationData.receipt_processing_status,
           receipt_confidence: donationData.receipt_confidence,
           receipt_parsed_data: donationData.receipt_parsed_data,
+          receipt_date_time: donationData.payment_date_time || null,
         }),
       });
       if (!insertRes.ok) {
@@ -417,6 +441,11 @@ export default function DonationForm() {
                 </div>
               </div>
             </div>
+
+            {/* Special Note - Receipt Name */}
+            <p className="text-sm text-amber-700 bg-amber-50 rounded-lg px-4 py-2 mb-4 text-center border border-amber-200">
+              <span className="font-semibold">Note:</span> The receipt name will show as <strong>AKASH G</strong>
+            </p>
             
             {/* UPI ID Display */}
             <div className="bg-primary-50 rounded-xl p-4 text-center">
@@ -623,14 +652,14 @@ export default function DonationForm() {
                     </div>
                   </div>
                   
-                  {/* UPI Verification Status */}
+                  {/* UPI Verification Status - matches on last 4 digits (3722) for masked receipts */}
                   {receiptData.to_upi_id && (
                     <div className={`mt-4 p-3 rounded-lg flex items-center gap-2 ${
-                      receiptData.to_upi_id.toLowerCase() === upiId.toLowerCase() 
+                      isUpiMatching(receiptData.to_upi_id)
                         ? 'bg-green-50 border border-green-200' 
                         : 'bg-red-50 border border-red-200'
                     }`}>
-                      {receiptData.to_upi_id.toLowerCase() === upiId.toLowerCase() ? (
+                      {isUpiMatching(receiptData.to_upi_id) ? (
                         <>
                           <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -699,8 +728,17 @@ export default function DonationForm() {
                 Thank You for Your Donation!
               </h3>
               <p className="text-neutral-600">
-                Your contribution has been successfully submitted
+                {submittedData?.status === "verified"
+                  ? "Your contribution has been successfully submitted"
+                  : "Your data has been recorded and is under approval process."}
               </p>
+              {submittedData?.status === "pending_verification" && (
+                <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm max-w-xl mx-auto">
+                  <p className="font-medium">
+                    Once our team approves your donation, it will be available publicly. We have saved your transaction ID for manual verification.
+                  </p>
+                </div>
+              )}
             </div>
             
             {/* Donation Summary Card */}

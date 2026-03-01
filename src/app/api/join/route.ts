@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebaseAdmin";
+import { sendEmail, wrapEmailContent, EMAIL_BRAND, HANDBOOK_URL } from "@/lib/brevo";
 
 const DEFAULT_ROLE = "Volunteer";
 
@@ -11,12 +12,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Name and email are required" }, { status: 400 });
     }
     const emailTrimmed = String(email).trim();
-    if (!emailTrimmed.endsWith("@rishihood.edu.in")) {
-      return NextResponse.json(
-        { error: "Only Rishihood University emails (@rishihood.edu.in) can sign up." },
-        { status: 400 }
-      );
-    }
+    const nameTrimmed = String(name).trim();
 
     const existing = await adminDb
       .collection("team_members")
@@ -35,7 +31,7 @@ export async function POST(request: Request) {
     const nextSortOrder = lastByOrder.empty ? 0 : (lastByOrder.docs[0].data().sort_order ?? 0) + 1;
 
     await adminDb.collection("team_members").add({
-      name: String(name).trim(),
+      name: nameTrimmed,
       email: emailTrimmed,
       phone: phone ? String(phone).trim() : null,
       enrollment: enrollment ? String(enrollment).trim() : null,
@@ -49,6 +45,22 @@ export async function POST(request: Request) {
       is_core_member: false,
       created_at: new Date(),
     });
+
+    // Send thank you email (non-blocking; don't fail registration if email fails)
+    const thankYouBody = `
+      <h2 style="color: ${EMAIL_BRAND.primary}; margin-top: 0;">Thank you for joining us, ${nameTrimmed}!</h2>
+      <p>We're thrilled to welcome you to <strong>More Than Me</strong> — our student-led initiative giving back to India.</p>
+      <p>Your commitment to creating positive change means a lot to us. Together, we can make a real difference—one act of kindness at a time.</p>
+      <p><strong>Important:</strong> Please read our <a href="${HANDBOOK_URL}" style="color: ${EMAIL_BRAND.primary}; font-weight: 600;">Team Instruction Handbook</a> — it contains all necessary policies and guidelines that all volunteers must follow.</p>
+      <p>Stay tuned for updates on upcoming initiatives, events, and ways to get involved.</p>
+      <p>For any query or doubt, please reply to this email or contact us at <a href="mailto:morethanme.ngo@gmail.com" style="color: ${EMAIL_BRAND.primary}; font-weight: 600;">morethanme.ngo@gmail.com</a>.</p>
+      <p style="margin-top: 24px;">With gratitude,<br/><strong>The More Than Me Team</strong></p>
+    `;
+    sendEmail({
+      to: [{ email: emailTrimmed, name: nameTrimmed }],
+      subject: "Thank you for joining More Than Me! 🎉",
+      htmlContent: wrapEmailContent(thankYouBody),
+    }).catch((err) => console.error("Join thank-you email failed:", err));
 
     return NextResponse.json({ ok: true });
   } catch (e) {

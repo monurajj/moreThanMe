@@ -69,6 +69,7 @@ export default function AboutPage() {
   const [storyImageUrl, setStoryImageUrl] = useState<string | null>(null);
   const [featuredPhotos, setFeaturedPhotos] = useState<{ src: string; alt: string }[]>([]);
   const [featuredIndex, setFeaturedIndex] = useState(0);
+  const [storyImageLoaded, setStoryImageLoaded] = useState(false);
 
   useEffect(() => {
     fetch("/api/team")
@@ -126,7 +127,17 @@ export default function AboutPage() {
     return () => clearInterval(t);
   }, [hasFeaturedSlideshow, featuredPhotos.length]);
 
+  useEffect(() => {
+    setStoryImageLoaded(false);
+  }, [featuredIndex, storyImageUrl, hasFeaturedSlideshow]);
+
   const showStoryMedia = hasFeaturedSlideshow || storyImageUrl;
+
+  const optimizeCloudinaryUrl = (url: string) => {
+    if (typeof url !== "string" || !url.includes("cloudinary.com")) return url;
+    if (url.includes("/image/upload/w_") || url.includes("/image/upload/c_")) return url;
+    return url.replace("/image/upload/", "/image/upload/w_600,q_80,f_auto/");
+  };
 
   return (
     <main className="overflow-x-hidden">
@@ -175,6 +186,9 @@ export default function AboutPage() {
               >
                 <div className="relative group aspect-[5/4] rounded-2xl overflow-hidden shadow-xl bg-primary-100">
                   <div className="absolute -inset-1 bg-gradient-to-r from-primary-400 to-primary-600 rounded-2xl opacity-20 group-hover:opacity-30 transition-opacity blur-sm -z-10" />
+                  {!storyImageLoaded && (
+                    <div className="absolute inset-0 bg-primary-100 animate-pulse" aria-hidden="true" />
+                  )}
                   {hasFeaturedSlideshow ? (
                     <>
                       <AnimatePresence mode="wait" initial={false}>
@@ -187,11 +201,13 @@ export default function AboutPage() {
                           className="absolute inset-0"
                         >
                           <Image
-                            src={featuredPhotos[featuredIndex].src}
+                            src={optimizeCloudinaryUrl(featuredPhotos[featuredIndex].src)}
                             alt={featuredPhotos[featuredIndex].alt}
                             fill
                             sizes="(max-width: 1024px) 100vw, 512px"
                             className="object-cover"
+                            priority
+                            onLoad={() => setStoryImageLoaded(true)}
                           />
                         </motion.div>
                       </AnimatePresence>
@@ -213,11 +229,13 @@ export default function AboutPage() {
                     </>
                   ) : storyImageUrl ? (
                     <Image
-                      src={storyImageUrl}
+                      src={optimizeCloudinaryUrl(storyImageUrl)}
                       alt="Our Story - community and impact"
                       fill
                       sizes="(max-width: 1024px) 100vw, 512px"
                       className="object-cover"
+                      priority
+                      onLoad={() => setStoryImageLoaded(true)}
                     />
                   ) : null}
                 </div>

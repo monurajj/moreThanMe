@@ -1,9 +1,51 @@
 /**
  * Brevo (formerly Sendinblue) email client.
  * Sender email must be verified in your Brevo account.
+ * Shared branding: brand colors, website link, contact email, footer.
  */
 
 const API_URL = "https://api.brevo.com/v3/smtp/email";
+
+/** Brand colors (matches tailwind primary) */
+export const EMAIL_BRAND = {
+  primary: "#A51C30",
+  primaryDark: "#8B1538",
+  primaryDarker: "#742A2A",
+  text: "#27272a",
+  textMuted: "#52525b",
+} as const;
+
+const WEBSITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://morethanme.ngo";
+const CONTACT_EMAIL = "morethanme.ngo@gmail.com";
+
+/** Rule handbook URL (Team Instruction Handbook) - configurable via HANDBOOK_URL in .env.local */
+export const HANDBOOK_URL =
+  process.env.HANDBOOK_URL ||
+  "https://drive.google.com/file/d/1VJ1ZD1xgEtfNbJYELEC037biJr_xhden/view?usp=sharing";
+
+/** Standard footer for all emails: website link + contact email, in brand styling */
+export function getEmailFooter(): string {
+  return `
+    <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #fee2e2; font-size: 13px; color: ${EMAIL_BRAND.textMuted};">
+      <p style="margin: 0 0 8px 0;">
+        <a href="${WEBSITE_URL}" style="color: ${EMAIL_BRAND.primary}; font-weight: 600; text-decoration: none;">Visit our website</a>
+        &nbsp;·&nbsp;
+        <a href="mailto:${CONTACT_EMAIL}" style="color: ${EMAIL_BRAND.primary}; font-weight: 600; text-decoration: none;">${CONTACT_EMAIL}</a>
+      </p>
+      <p style="margin: 0; font-size: 12px;">More Than Me — Hearts for India</p>
+    </div>
+  `;
+}
+
+/** Wrap body HTML in a consistent container and append the standard footer */
+export function wrapEmailContent(bodyHtml: string): string {
+  return `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: ${EMAIL_BRAND.text};">
+      ${bodyHtml}
+      ${getEmailFooter()}
+    </div>
+  `;
+}
 
 export interface SendEmailOptions {
   to: Array<{ email: string; name?: string }>;

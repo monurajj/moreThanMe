@@ -8,9 +8,21 @@ interface Donation {
   amount: number;
   transaction_id: string;
   status: string;
-  created_at: string;
+  created_at?: unknown;
+  receipt_date_time?: string | null;
+  receipt_parsed_data?: { date_time?: string | null } | null;
   receipt_processing_status?: string;
   receipt_confidence?: number;
+}
+
+function toDate(val: unknown): Date | null {
+  if (!val) return null;
+  const v = val as { toDate?: () => Date; seconds?: number; _seconds?: number };
+  if (typeof v.toDate === "function") return v.toDate();
+  if (typeof v.seconds === "number") return new Date(v.seconds * 1000);
+  if (typeof v._seconds === "number") return new Date(v._seconds * 1000);
+  const d = new Date(val as string | number);
+  return Number.isNaN(d.getTime()) ? null : d;
 }
 
 export default function AdminDonatePage() {
@@ -64,18 +76,9 @@ export default function AdminDonatePage() {
     setUpdatingId(null);
   };
 
-  const formatDate = (dateInput: string | { toDate?: () => Date } | unknown) => {
-    const d =
-      typeof dateInput === "object" && dateInput && "toDate" in dateInput && typeof (dateInput as { toDate: () => Date }).toDate === "function"
-        ? (dateInput as { toDate: () => Date }).toDate()
-        : new Date(String(dateInput));
-    return d.toLocaleDateString("en-IN", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  const formatDate = (d: Donation) => {
+    const date = toDate(d.receipt_date_time ?? d.receipt_parsed_data?.date_time ?? d.created_at);
+    return date ? date.toLocaleString("en-IN", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
   };
 
   if (loading) {
@@ -151,7 +154,7 @@ export default function AdminDonatePage() {
                       {d.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{formatDate(d.created_at)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{formatDate(d)}</td>
                   <td className="px-4 py-3">
                     {d.status === "pending_verification" && (
                       <div className="flex gap-2">
