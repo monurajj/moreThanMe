@@ -1,13 +1,27 @@
+"use client";
+
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
 export default function Footer() {
+  const [settings, setSettings] = useState<{ contact_email?: string; contact_phone?: string; contact_address?: string }>({});
+
+  useEffect(() => {
+    fetch("/api/site-settings")
+      .then((r) => r.json())
+      .then(setSettings)
+      .catch(() => {});
+  }, []);
+
+  const email = settings.contact_email || "";
+  const phone = settings.contact_phone || "";
+  const address = settings.contact_address || "";
+
   return (
     <footer className="w-full bg-neutral-800 text-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {/* Main Footer Content */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           
-          {/* Organization Info */}
           <div className="sm:col-span-2 lg:col-span-2">
             <Link href="/" className="font-bold text-2xl flex items-center mb-4">
               <span className="text-primary-600">morethan</span>
@@ -22,32 +36,38 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Contact Information */}
           <div>
             <h3 className="text-lg font-semibold mb-4 text-white">Contact Us</h3>
             <div className="space-y-3 text-sm text-neutral-300">
-              <div>
-                <p className="font-medium text-neutral-200">Email</p>
-                <p>unitedforgood2025@gmail.com</p>
-              </div>
-              <div>
-                <p className="font-medium text-neutral-200">Phone</p>
-                <p className="mb-1"><a href="tel:+917541062514" className="hover:text-white transition-colors">+91 75410 62514</a></p>
-                <p><a href="tel:+918679144515" className="hover:text-white transition-colors">+91 86791 44515</a></p>
-              </div>
-              <div>
-                <p className="font-medium text-neutral-200">Address</p>
-                <p>Rishihood University<br />Sonipat, Haryana, India</p>
-              </div>
+              {email && (
+                <div>
+                  <p className="font-medium text-neutral-200">Email</p>
+                  <p><a href={`mailto:${email}`} className="hover:text-white transition-colors">{email}</a></p>
+                </div>
+              )}
+              {phone && (
+                <div>
+                  <p className="font-medium text-neutral-200">Phone</p>
+                  <p><a href={`tel:${phone.replace(/\s/g, "")}`} className="hover:text-white transition-colors">{phone}</a></p>
+                </div>
+              )}
+              {address && (
+                <div>
+                  <p className="font-medium text-neutral-200">Address</p>
+                  <p className="whitespace-pre-line">{address}</p>
+                </div>
+              )}
+              {!email && !phone && !address && (
+                <p className="text-neutral-400">Contact info configured in admin.</p>
+              )}
             </div>
           </div>
 
-          {/* Quick Links */}
           <div>
             <h3 className="text-lg font-semibold mb-4 text-white">Quick Links</h3>
             <div className="space-y-2 text-sm">
               <Link href="/about" className="block text-neutral-300 hover:text-white transition-colors">About Us</Link>
-              {/* <Link href="/our-family" className="block text-neutral-300 hover:text-white transition-colors">Our Family</Link> */}
+              <Link href="/works" className="block text-neutral-300 hover:text-white transition-colors">Our Works</Link>
               <Link href="/transparency" className="block text-neutral-300 hover:text-white transition-colors">Transparency</Link>
               <Link href="/contact" className="block text-neutral-300 hover:text-white transition-colors">Contact</Link>
               <Link href="/joinUs" className="block text-neutral-300 hover:text-white transition-colors">Join Us</Link>
@@ -55,7 +75,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom Copyright */}
         <div className="border-t border-neutral-700 pt-4 sm:pt-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 text-xs sm:text-sm text-neutral-400">
             <div>
@@ -73,4 +92,4 @@ export default function Footer() {
       </div>
     </footer>
   );
-} 
+}

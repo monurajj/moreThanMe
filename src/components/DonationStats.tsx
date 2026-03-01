@@ -1,6 +1,5 @@
 "use client"
 import { useState, useEffect } from "react";
-import { supabase } from "../lib/supabaseClient";
 
 interface DonationStats {
   total_donations: number;
@@ -23,103 +22,19 @@ export default function DonationStats() {
 
   const fetchStats = async () => {
     try {
-      // Try to fetch from the view first
-      const { data: viewData, error } = await supabase
-        .from("donation_stats")
-        .select("*")
-        .single();
-
-      if (error) {
-        // Fallback: calculate stats directly from donations table
-        const { data: donations, error: donationsError } = await supabase
-          .from("donations")
-          .select("*");
-
-        if (donationsError) throw donationsError;
-
-        // Calculate stats manually
-        const total = donations?.length || 0;
-        const verified = donations?.filter(d => d.status === 'verified').length || 0;
-        const pending = donations?.filter(d => d.status === 'pending_verification').length || 0;
-        const totalAmount = donations?.reduce((sum, d) => sum + (d.amount || 0), 0) || 0;
-        const averageAmount = total > 0 ? totalAmount / total : 0;
-        
-        // Calculate max amount more safely
-        let maxAmount = 0;
-        if (donations && donations.length > 0) {
-          // Convert amounts to numbers and filter out null/undefined/NaN values
-          const amounts = donations
-            .map(d => {
-              let amount = d.amount;
-              // Handle different data types
-              if (typeof amount === 'string') {
-                amount = parseFloat(amount);
-              } else if (typeof amount === 'number') {
-                amount = amount;
-              } else {
-                amount = 0;
-              }
-              return isNaN(amount) ? 0 : amount;
-            })
-            .filter(amount => amount > 0);
-          
-          maxAmount = amounts.length > 0 ? Math.max(...amounts) : 0;
-        }
-        
-        const receiptsProcessed = donations?.filter(d => d.receipt_processing_status === 'completed').length || 0;
-        const highConfidence = donations?.filter(d => d.receipt_confidence && d.receipt_confidence >= 0.8).length || 0;
-
-        const calculatedData = {
-          total_donations: total,
-          total_amount: totalAmount,
-          average_amount: averageAmount || null,
-          max_amount: maxAmount || null,
-          receipts_processed: receiptsProcessed,
-          high_confidence_receipts: highConfidence,
-          verified_donations: verified,
-          pending_donations: pending
-        };
-        
-        setStats(calculatedData);
-      } else {
-        // Handle case where view might not have max_amount and average_amount fields yet
-        
-        // If the view doesn't have max_amount or average_amount, calculate them manually
-        let maxAmount = viewData.max_amount;
-        const averageAmount = viewData.average_amount;
-        
-        if (maxAmount === null || maxAmount === undefined) {
-          // Calculate max_amount manually
-          const { data: donationsForMax, error: maxError } = await supabase
-            .from("donations")
-            .select("amount");
-          
-          if (!maxError && donationsForMax && donationsForMax.length > 0) {
-            const amounts = donationsForMax
-              .map(d => {
-                let amount = d.amount;
-                if (typeof amount === 'string') {
-                  amount = parseFloat(amount);
-                } else if (typeof amount === 'number') {
-                  amount = amount;
-                } else {
-                  amount = 0;
-                }
-                return isNaN(amount) ? 0 : amount;
-              })
-              .filter(amount => amount > 0);
-            
-            maxAmount = amounts.length > 0 ? Math.max(...amounts) : 0;
-          }
-        }
-        
-        const viewDataWithDefaults = {
-          ...viewData,
-          average_amount: averageAmount || null,
-          max_amount: maxAmount || null
-        };
-        setStats(viewDataWithDefaults);
-      }
+      const res = await fetch("/api/donations/stats");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Failed to fetch");
+      setStats({
+        total_donations: data.total_donations || 0,
+        total_amount: data.total_amount_verified || data.total_amount || 0,
+        average_amount: data.average_amount ?? null,
+        max_amount: data.max_amount ?? null,
+        receipts_processed: data.receipts_processed || 0,
+        high_confidence_receipts: data.high_confidence_receipts || 0,
+        verified_donations: data.verified_donations || 0,
+        pending_donations: data.pending_donations || 0,
+      });
     } catch (err) {
       console.error("Error fetching stats:", err);
     } finally {

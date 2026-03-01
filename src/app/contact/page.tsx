@@ -1,14 +1,27 @@
-
 "use client";
 
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin } from "lucide-react";
-import SocialIcons from "@/components/SocialIcons";
 import Button from "../../components/Button";
 import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import ContactFormSection from "../../components/ContactFormSection";
+import ThanksFormSection from "../../components/ThanksFormSection";
 
 export default function ContactPage() {
   const router = useRouter();
+  const [settings, setSettings] = useState<{ contact_email?: string; contact_phone?: string; contact_address?: string }>({});
+
+  useEffect(() => {
+    fetch("/api/site-settings")
+      .then((r) => r.json())
+      .then(setSettings)
+      .catch(() => {});
+  }, []);
+
+  const email = settings.contact_email || "";
+  const phone = settings.contact_phone || "";
+  const address = settings.contact_address || "";
 
   return (
     <main>
@@ -53,13 +66,48 @@ export default function ContactPage() {
                 className="bg-transparent hover:bg-primary-50 text-primary-600 border-2 border-primary-600 font-semibold py-3 px-8 rounded-lg text-lg">
                 Join Our Team
               </Button>
-              {/* <Button 
-                onClick={() => router.push("/donate")} 
-                className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-lg text-lg">
-                Support Our Cause
-              </Button> */}
             </motion.div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Contact Form Section */}
+      <section className="w-full bg-neutral-50 py-16 sm:py-24 px-4">
+        <div className="max-w-2xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-10"
+          >
+            <span className="inline-flex items-center px-4 py-2 rounded-full bg-primary-100 text-primary-700 text-sm font-medium mb-4">
+              Get in touch
+            </span>
+            <h2 className="text-3xl lg:text-4xl font-bold text-primary-800 mb-2">Send us a message</h2>
+            <p className="text-neutral-600">We&apos;ll reply as soon as we can. All submissions appear in the admin panel.</p>
+          </motion.div>
+          <ContactFormSection />
+        </div>
+      </section>
+
+      {/* Thanks Section */}
+      <section className="w-full bg-gradient-to-br from-primary-700 to-primary-600 py-16 sm:py-24 px-4">
+        <div className="max-w-xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-8"
+          >
+            <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 text-white text-sm font-medium mb-4">
+              Say thanks
+            </span>
+            <h2 className="text-3xl lg:text-4xl font-bold text-white mb-2">Thank More Than Me</h2>
+            <p className="text-white/90">Optional name and message—or just click the button to send your thanks.</p>
+          </motion.div>
+          <ThanksFormSection />
         </div>
       </section>
 
@@ -83,80 +131,84 @@ export default function ContactPage() {
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="group"
-            >
-              <div className="bg-white rounded-2xl p-8 text-center border border-neutral-200 hover:border-primary-200 hover:shadow-lg transition-all duration-300 h-full">
-                <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary-200 transition-colors">
-                  <Mail className="w-8 h-8 text-primary-600" />
-                </div>
-                <h3 className="text-xl font-bold text-primary-800 mb-4">Email Us</h3>
-                <p className="text-neutral-600 leading-relaxed mb-4">
-                  Send us a message and we&apos;ll get back to you within 24 hours.
-                </p>
-                <a href="mailto:unitedforgood2025@gmail.com" className="text-primary-600 hover:text-primary-700 font-medium">
-                  unitedforgood2025@gmail.com
-                </a>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="group"
-            >
-              <div className="bg-white rounded-2xl p-8 text-center border border-neutral-200 hover:border-primary-200 hover:shadow-lg transition-all duration-300 h-full">
-                <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary-200 transition-colors">
-                  <Phone className="w-8 h-8 text-primary-600" />
-                </div>
-                <h3 className="text-xl font-bold text-primary-800 mb-4">Call Us</h3>
-                <p className="text-neutral-600 leading-relaxed mb-4">
-                  Speak directly with our team for immediate assistance.
-                </p>
-                <div className="space-y-2">
-                  <a href="tel:+917541062514" className="block text-primary-600 hover:text-primary-700 font-medium">
-                    +91 75410 62514
-                  </a>
-                  <a href="tel:+918679144515" className="block text-primary-600 hover:text-primary-700 font-medium">
-                    +91 86791 44515
+            {email && (
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="group"
+              >
+                <div className="bg-white rounded-2xl p-8 text-center border border-neutral-200 hover:border-primary-200 hover:shadow-lg transition-all duration-300 h-full">
+                  <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary-200 transition-colors">
+                    <Mail className="w-8 h-8 text-primary-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-primary-800 mb-4">Email Us</h3>
+                  <p className="text-neutral-600 leading-relaxed mb-4">
+                    Send us a message and we&apos;ll get back to you within 24 hours.
+                  </p>
+                  <a href={`mailto:${email}`} className="text-primary-600 hover:text-primary-700 font-medium">
+                    {email}
                   </a>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            )}
 
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="group"
-            >
-              <div className="bg-white rounded-2xl p-8 text-center border border-neutral-200 hover:border-primary-200 hover:shadow-lg transition-all duration-300 h-full">
-                <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary-200 transition-colors">
-                  <MapPin className="w-8 h-8 text-primary-600" />
+            {phone && (
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="group"
+              >
+                <div className="bg-white rounded-2xl p-8 text-center border border-neutral-200 hover:border-primary-200 hover:shadow-lg transition-all duration-300 h-full">
+                  <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary-200 transition-colors">
+                    <Phone className="w-8 h-8 text-primary-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-primary-800 mb-4">Call Us</h3>
+                  <p className="text-neutral-600 leading-relaxed mb-4">
+                    Speak directly with our team for immediate assistance.
+                  </p>
+                  <a href={`tel:${phone.replace(/\s/g, "")}`} className="block text-primary-600 hover:text-primary-700 font-medium">
+                    {phone}
+                  </a>
                 </div>
-                <h3 className="text-xl font-bold text-primary-800 mb-4">Visit Us</h3>
-                <p className="text-neutral-600 leading-relaxed mb-4">
-                  Find us at our university campus during office hours.
-                </p>
-                <span className="text-primary-600 font-medium">
-                  Rishihood University<br />Sonipat, Haryana
-                </span>
-              </div>
-            </motion.div>
+              </motion.div>
+            )}
+
+            {address && (
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="group"
+              >
+                <div className="bg-white rounded-2xl p-8 text-center border border-neutral-200 hover:border-primary-200 hover:shadow-lg transition-all duration-300 h-full">
+                  <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary-200 transition-colors">
+                    <MapPin className="w-8 h-8 text-primary-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-primary-800 mb-4">Visit Us</h3>
+                  <p className="text-neutral-600 leading-relaxed mb-4">
+                    Find us at our university campus during office hours.
+                  </p>
+                  <span className="text-primary-600 font-medium whitespace-pre-line">
+                    {address}
+                  </span>
+                </div>
+              </motion.div>
+            )}
           </div>
+
+          {!email && !phone && !address && (
+            <p className="text-center text-neutral-500 py-12">Contact information will appear here once configured in the admin panel.</p>
+          )}
         </div>
       </section>
 
       {/* Inspiring Quote Section */}
       <section className="w-full bg-gradient-to-br from-primary-800 via-primary-700 to-primary-600 py-32 px-4 relative overflow-hidden">
-        {/* Background Elements */}
         <div className="absolute inset-0">
           <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-48 translate-x-48"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-32 -translate-x-32"></div>
@@ -170,7 +222,6 @@ export default function ContactPage() {
             transition={{ duration: 0.8 }}
             className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center"
           >
-            {/* Left: Content */}
             <div className="lg:col-span-8">
               <motion.div
                 initial={{ opacity: 0, x: -30 }}
@@ -205,7 +256,6 @@ export default function ContactPage() {
               </motion.div>
             </div>
             
-            {/* Right: Visual Element */}
             <div className="lg:col-span-4 flex justify-center lg:justify-end">
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -215,10 +265,7 @@ export default function ContactPage() {
                 className="relative"
               >
                 <div className="w-48 h-48 lg:w-64 lg:h-64 rounded-full bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-sm border border-white/30 flex items-center justify-center relative overflow-hidden">
-                  {/* Inner glow */}
                   <div className="absolute inset-4 rounded-full bg-gradient-to-br from-orange-300/30 to-transparent"></div>
-                  
-                  {/* Center icon/symbol */}
                   <div className="relative z-10 text-center">
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/20 flex items-center justify-center">
                       <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -228,8 +275,6 @@ export default function ContactPage() {
                     <div className="text-white/80 text-sm font-medium">Service</div>
                     <div className="text-orange-200 text-xs">to Others</div>
                   </div>
-                  
-                  {/* Floating particles */}
                   <div className="absolute top-8 right-8 w-2 h-2 bg-orange-300/60 rounded-full animate-pulse"></div>
                   <div className="absolute bottom-12 left-8 w-1.5 h-1.5 bg-white/60 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
                   <div className="absolute top-16 left-12 w-1 h-1 bg-orange-200/80 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
@@ -239,51 +284,6 @@ export default function ContactPage() {
           </motion.div>
         </div>
       </section>
-
-      {/* Social Media Section */}
-      {/* <section className="w-full bg-white py-24 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <span className="inline-flex items-center px-4 py-2 rounded-full bg-primary-100 text-primary-700 text-sm font-medium mb-8">
-              Follow Our Journey
-            </span>
-            
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-4xl lg:text-5xl font-bold text-primary-800 mb-6 leading-tight"
-            >
-              Stay Connected
-            </motion.h2>
-            
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="text-xl text-neutral-600 mb-10 leading-relaxed"
-            >
-              Follow us on social media to stay updated on our latest initiatives and impact stories.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-            >
-              <SocialIcons />
-            </motion.div>
-          </motion.div>
-        </div>
-      </section> */}
     </main>
   );
-} 
+}

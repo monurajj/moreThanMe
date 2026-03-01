@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Public read for team, site_settings, media_assets
+    match /team_members/{doc} { allow read: if true; allow write: if false; }
+    match /site_settings/{doc} { allow read: if true; allow write: if false; }
+    match /media_assets/{doc} { allow read: if true; allow write: if false; }
+
+    // works: Our Works & Events. Read via /api/works, write via /api/admin/works only.
+    // expenditures: Transparency (amount, reason, date). Admin only via /api/admin/expenditures.
+
+    // All other collections: no direct client access (use API routes with Admin SDK)
+    match /{document=**} { allow read, write: if false; }
+  }
+}

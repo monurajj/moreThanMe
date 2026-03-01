@@ -1,14 +1,7 @@
 "use client"
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
-
 interface DonationStats {
   total_amount: number;
-}
-
-interface DonationData {
-  amount: number | null;
-  status: string;
 }
 
 // Custom hook for animated counting
@@ -61,25 +54,10 @@ export default function HeartProgress() {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      
-      // Fetch verified donations from Supabase
-      const { data: donations, error: donationsError } = await supabase
-        .from("donations")
-        .select("amount, status")
-        .in("status", ["verified", "pending_verification"]);
-
-      if (donationsError) {
-        console.error("Error fetching donations:", donationsError);
-        throw donationsError;
-      }
-
-      // Calculate total amount from verified donations only
-      const totalAmount = donations
-        ?.reduce((sum: number, d: DonationData) => sum + (d.amount || 0), 0) || 0;
-      
+      const res = await fetch("/api/donations/stats");
+      const data = await res.json().catch(() => ({}));
+      const totalAmount = data.total_amount_verified ?? data.total_amount ?? 0;
       setStats({ total_amount: totalAmount });
-      
-      // Start animations after data is loaded
       setTimeout(() => setAnimationStarted(true), 300);
     } catch (err) {
       console.error("Error fetching stats:", err);

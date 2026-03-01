@@ -1,19 +1,20 @@
-"use client"
+"use client";
+
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
+import CloudinaryUpload from "@/components/CloudinaryUpload";
 
 export default function JoinPage() {
-
   const [form, setForm] = useState({
     name: "",
-    universityEmail: "",
+    email: "",
     enrollment: "",
     batch: "2023",
-    course: "CSAI",
+    course: "BTECH",
     phone: "",
-    message: "",
+    why_join: "",
   });
+  const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -26,72 +27,65 @@ export default function JoinPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    // Check if university email is valid
-    if (!form.universityEmail.endsWith('rishihood.edu.in')) {
+    if (!form.email.trim().toLowerCase().endsWith("@rishihood.edu.in")) {
       setLoading(false);
-      setError('Only Rishihood University emails (@rishihood.edu.in) can sign up.');
+      setError("Only Rishihood University emails (@rishihood.edu.in) can sign up.");
       return;
     }
-    // 1. Check if user already exists
-    const { data: existing, error: selectError } = await supabase
-      .from('volunteers')
-      .select('id')
-      .eq('university_email', form.universityEmail)
-      .maybeSingle();
-    if (selectError) {
-      setLoading(false);
-      setError('There was an error checking your registration. Please try again.');
-      router.push("/joinUs/status?status=error");
-      return;
-    }
-    if (existing) {
-      setLoading(false);
+    const res = await fetch("/api/join", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: form.name,
+        email: form.email.trim(),
+        phone: form.phone.trim() || undefined,
+        enrollment: form.enrollment.trim() || undefined,
+        batch: form.batch,
+        course: form.course,
+        why_join: form.why_join.trim() || undefined,
+        image_url: imageUrl.trim() || undefined,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setLoading(false);
+    if (res.status === 409 || data.error === "already_registered") {
       router.push("/joinUs/status?status=already");
       return;
     }
-    // 2. Insert new user
-    const { error: insertError } = await supabase.from('volunteers').insert([
-      {
-        name: form.name,
-        university_email: form.universityEmail,
-        enrollment: form.enrollment,
-        batch: form.batch,
-        course: form.course,
-        phone: form.phone,
-        message: form.message,
-        created_at: new Date().toISOString(),
-      },
-    ]);
-    setLoading(false);
-    if (insertError) {
-      console.error(insertError); // Log the error for debugging
-      // Check for unique constraint violation (Postgres error code 23505 or message)
-      if (
-        insertError.code === '23505' ||
-        (insertError.details && insertError.details.toLowerCase().includes('duplicate key value')) ||
-        (insertError.message && insertError.message.toLowerCase().includes('duplicate'))
-      ) {
-        router.push("/joinUs/status/already");
-      } else {
-        setError("There was an error submitting your form. Please try again.");
-        router.push("/joinUs/status?status=error");
-      }
-    } else {
-      router.push("/joinUs/status/welcome");
+    if (!res.ok) {
+      setError(data.error || "There was an error submitting your form. Please try again.");
+      return;
     }
+    router.push("/joinUs/status/welcome");
   }
 
   return (
     <main className="p-8 max-w-3xl mx-auto">
       <h1 className="text-3xl font-bold mb-4">Join Us</h1>
-      <p className="mb-8 text-gray-700 dark:text-gray-300">Become a volunteer and help us make a difference! Fill out the form below to join our team at Rishihood University.</p>
+      <p className="mb-8 text-gray-700 dark:text-gray-300">
+        Become a volunteer and help us make a difference! Fill out the form below to join our team at Rishihood University.
+      </p>
       <form
         onSubmit={handleSubmit}
         className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl space-y-6 border border-blue-100 dark:border-blue-700 mb-12"
       >
         {error && (
-          <div className="bg-red-100 text-red-700 px-4 py-2 rounded mb-4">{error}</div>
+          <div className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 px-4 py-2 rounded mb-4">
+            {error}
+          </div>
         )}
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Photo</label>
+          <CloudinaryUpload
+            onUpload={(url) => setImageUrl(url)}
+            folder="morethanme/team"
+            accept="image/*"
+            maxSizeMB={2}
+          />
+          {imageUrl && <span className="ml-2 text-xs text-green-600 dark:text-green-400">Photo added</span>}
+        </div>
+
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Name <span className="text-red-500">*</span>
@@ -106,21 +100,38 @@ export default function JoinPage() {
             className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
           />
         </div>
+
         <div>
-          <label htmlFor="universityEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             University Email <span className="text-red-500">*</span>
           </label>
           <input
             type="email"
-            id="universityEmail"
-            name="universityEmail"
+            id="email"
+            name="email"
             required
             placeholder="yourname@rishihood.edu.in"
-            value={form.universityEmail}
+            value={form.email}
             onChange={handleChange}
             className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
           />
         </div>
+
+        <div>
+          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Phone Number
+          </label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            value={form.phone}
+            onChange={handleChange}
+            className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+            placeholder="e.g. 9876543210"
+          />
+        </div>
+
         <div>
           <label htmlFor="enrollment" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Enrollment Number <span className="text-red-500">*</span>
@@ -136,6 +147,7 @@ export default function JoinPage() {
             className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
           />
         </div>
+
         <div>
           <label htmlFor="batch" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Batch <span className="text-red-500">*</span>
@@ -156,6 +168,7 @@ export default function JoinPage() {
             <option value="other">Other</option>
           </select>
         </div>
+
         <div>
           <label htmlFor="course" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Course <span className="text-red-500">*</span>
@@ -175,39 +188,25 @@ export default function JoinPage() {
             <option value="OTHER">Other</option>
           </select>
         </div>
+
         <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Phone Number
-          </label>
-          <input
-            type="tel"
-            id="phone"
-            name="phone"
-            value={form.phone}
-            onChange={handleChange}
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
-            placeholder="e.g. 9876543210"
-          />
-        </div>
-        
-        
-        <div>
-          <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label htmlFor="why_join" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Why do you want to join? <span className="text-red-500">*</span>
           </label>
           <textarea
-            id="message"
-            name="message"
+            id="why_join"
+            name="why_join"
             rows={4}
             required
-            value={form.message}
+            value={form.why_join}
             onChange={handleChange}
             className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
-          ></textarea>
+          />
         </div>
+
         <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out disabled:opacity-60 disabled:pointer-events-none"
           disabled={loading}
         >
           {loading ? "Submitting..." : "Submit"}
@@ -215,4 +214,4 @@ export default function JoinPage() {
       </form>
     </main>
   );
-} 
+}

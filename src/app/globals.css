@@ -8,31 +8,24 @@
   outline-offset: 2px;
 }
 
-/* Hero section positioning - starts from top, negative margin to cover navbar */
+/* Hero section - full width, sits below navbar (no overlap) */
 .hero-section {
-  margin-top: -5rem; /* -80px to match main padding-top */
+  margin-top: 0;
   margin-bottom: 0;
   position: relative;
-  z-index: 10; /* Ensure it's below navbar but above other content */
+  z-index: 0;
   top: 0;
   padding-top: 0;
+  width: 100%;
 }
 
-/* Adjust hero section margin when special day navbar is active (taller navbar) */
+/* Extra padding when special day navbar is active (taller navbar) */
 body.special-day-navbar main {
-  padding-top: 7rem; /* Extra padding for special day message row */
-}
-
-body.special-day-navbar .hero-section {
-  margin-top: calc(-7rem - 1px); /* -112px minus 1px to eliminate gap */
+  padding-top: 7rem;
 }
 
 @media (min-width: 1024px) {
   body.special-day-navbar main {
     padding-top: 7.5rem;
-  }
-  
-  body.special-day-navbar .hero-section {
-    margin-top: calc(-7.5rem - 1px); /* -120px minus 1px to eliminate gap */
   }
 }

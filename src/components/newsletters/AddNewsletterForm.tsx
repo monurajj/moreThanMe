@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import CloudinaryUpload from '@/components/CloudinaryUpload';
 
 const PREDEFINED_CATEGORIES = ['monthly', 'weekly', 'annual', 'special-edition'];
 
@@ -13,6 +14,7 @@ export default function AddNewsletterForm() {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [uploadKey, setUploadKey] = useState(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +42,7 @@ export default function AddNewsletterForm() {
         category: 'monthly',
         file_path: '',
       });
+      setUploadKey((k) => k + 1);
     } catch (err) {
       setMessage({
         type: 'error',
@@ -131,21 +134,20 @@ export default function AddNewsletterForm() {
             htmlFor="file_path"
             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
-            File Path *
+            Newsletter File (PDF) *
           </label>
-          <input
-            type="text"
-            id="file_path"
-            name="file_path"
-            value={formData.file_path}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-            placeholder="monthly/jan-2025.pdf"
+          <CloudinaryUpload
+            key={uploadKey}
+            onUpload={(url) => setFormData((prev) => ({ ...prev, file_path: url }))}
+            folder="morethanme/newsletters"
+            accept=".pdf,application/pdf"
+            maxSizeMB={10}
           />
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Path inside the newsletters bucket (e.g., monthly/jan-2025.pdf or newsletters/monthly/jan-2025.pdf)
-          </p>
+          {formData.file_path && (
+            <p className="mt-2 text-xs text-green-600 dark:text-green-400">
+              File uploaded. URL will be used in the newsletter email.
+            </p>
+          )}
         </div>
 
         {message && (
@@ -162,7 +164,7 @@ export default function AddNewsletterForm() {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !formData.file_path}
           className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-4 rounded-md transition-colors"
         >
           {loading ? 'Adding...' : 'Add Newsletter'}

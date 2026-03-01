@@ -1,6 +1,5 @@
 "use client"
 import { useState, useEffect } from "react";
-import { supabase } from "../lib/supabaseClient";
 import { Chart } from "./Chart";
 
 interface Donation {
@@ -34,14 +33,9 @@ export default function AdminDashboard() {
 
   const fetchDonations = async () => {
     try {
-      const { data, error } = await supabase
-        .from("donations")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-      setDonations(data || []);
+      const res = await fetch("/api/admin/donations", { credentials: "include" });
+      const data = await res.json().catch(() => []);
+      setDonations(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching donations:", error);
     } finally {
@@ -51,22 +45,15 @@ export default function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      const { data, error } = await supabase
-        .from("donation_stats")
-        .select("*")
-        .single();
-
-      if (error) throw error;
-      
-      if (data) {
-        setStats({
-          total: data.total_donations || 0,
-          verified: data.verified_donations || 0,
-          pending: data.pending_donations || 0,
-          totalAmount: data.total_amount_verified || 0,
-          receiptsProcessed: data.receipts_processed || 0
-        });
-      }
+      const res = await fetch("/api/admin/donation-stats", { credentials: "include" });
+      const data = await res.json().catch(() => ({}));
+      setStats({
+        total: data.total_donations || 0,
+        verified: data.verified_donations || 0,
+        pending: data.pending_donations || 0,
+        totalAmount: data.total_amount_verified || 0,
+        receiptsProcessed: data.receipts_processed || 0,
+      });
     } catch (error) {
       console.error("Error fetching stats:", error);
     }
@@ -74,19 +61,16 @@ export default function AdminDashboard() {
 
   const updateDonationStatus = async (id: string, status: string) => {
     try {
-      const { error } = await supabase
-        .from("donations")
-        .update({ 
-          status,
-          verified_at: status === 'verified' ? new Date().toISOString() : null
-        })
-        .eq("id", id);
-
-      if (error) throw error;
-      
-      // Refresh data
-      fetchDonations();
-      fetchStats();
+      const res = await fetch("/api/admin/donations", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ id, status }),
+      });
+      if (res.ok) {
+        fetchDonations();
+        fetchStats();
+      }
     } catch (error) {
       console.error("Error updating donation status:", error);
     }

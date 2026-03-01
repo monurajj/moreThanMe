@@ -1,22 +1,30 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Users, Mail, Phone } from "lucide-react";
 
+interface TeamMember {
+  id: string;
+  name: string;
+  role: string;
+  email?: string | null;
+  phone?: string | null;
+  image_url?: string | null;
+}
+
 export default function TeamPage() {
-  const teamMembers = [
-    // { name: "A M YEESHU", role: "Team Manager, Tech Management" },
-    // { name: "Prince Sahoo", role: "Tech Management" },
-    { name: "Sourabh sarkar", role: "Finance and Social Media" },
-    { name: "Akash", role: "Finance" },
-    { name: "Monu Kumar", role: "POC & Outreaches" },
-    { name: "Manish Kumar", role: "POC & Outreaches" },
-    { name: "Shreya Narayani", role: "Outreaches and Social Media" },
-    // { name: "Prashant", role: "Event & Resource Management" },
-    { name: "Kartik Reddy", role: "Event & Resource Management" },
-    // { name: "Anjana Kamle", role: "Event & Resource Management" },
-    { name: "Murli", role: "Media Management" },
-  ];
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/team")
+      .then((r) => r.json())
+      .then((data) => setTeamMembers(Array.isArray(data) ? data : []))
+      .catch(() => setTeamMembers([]))
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <main>
       {/* Hero Section */}
@@ -73,31 +81,55 @@ export default function TeamPage() {
 
           {/* Team Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {teamMembers.map((member, idx) => (
-              <motion.div
-                key={member.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.1 * ((idx % 3) + 1) }}
-              >
-                <div className="bg-white rounded-2xl p-8 text-center border border-neutral-200 hover:border-primary-200 hover:shadow-lg transition-all duration-300 h-full">
-                  <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Users className="w-12 h-12 text-primary-600" />
+            {loading ? (
+              <div className="col-span-full text-center text-neutral-500 py-12">Loading team...</div>
+            ) : teamMembers.length === 0 ? (
+              <div className="col-span-full text-center text-neutral-500 py-12">No team members yet.</div>
+            ) : (
+              teamMembers.map((member, idx) => (
+                <motion.div
+                  key={member.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.1 * ((idx % 3) + 1) }}
+                >
+                  <div className="bg-white rounded-2xl p-8 text-center border border-neutral-200 hover:border-primary-200 hover:shadow-lg transition-all duration-300 h-full">
+                    <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6 overflow-hidden">
+                      {member.image_url ? (
+                        <img src={member.image_url} alt={member.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <Users className="w-12 h-12 text-primary-600" />
+                      )}
+                    </div>
+                    <h3 className="text-xl font-bold text-primary-800 mb-2">{member.name}</h3>
+                    <p className="text-primary-600 font-medium mb-4">{member.role}</p>
+                    <div className="flex justify-center gap-3">
+                      {member.email && (
+                        <a href={`mailto:${member.email}`} className="text-neutral-400 hover:text-primary-600 transition-colors" aria-label="Email">
+                          <Mail className="w-5 h-5" />
+                        </a>
+                      )}
+                      {member.phone && (
+                        <a href={`tel:${member.phone.replace(/\s/g, "")}`} className="text-neutral-400 hover:text-primary-600 transition-colors" aria-label="Call">
+                          <Phone className="w-5 h-5" />
+                        </a>
+                      )}
+                      {!member.email && !member.phone && (
+                        <>
+                          <a href="mailto:unitedforgood2025@gmail.com" className="text-neutral-400 hover:text-primary-600 transition-colors" aria-label="Email">
+                            <Mail className="w-5 h-5" />
+                          </a>
+                          <a href="tel:+917541062514" className="text-neutral-400 hover:text-primary-600 transition-colors" aria-label="Call">
+                            <Phone className="w-5 h-5" />
+                          </a>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <h3 className="text-xl font-bold text-primary-800 mb-2">{member.name}</h3>
-                  <p className="text-primary-600 font-medium mb-4">{member.role}</p>
-                  <div className="flex justify-center gap-3">
-                    <a href="mailto:unitedforgood2025@gmail.com" className="text-neutral-400 hover:text-primary-600 transition-colors" aria-label="Email">
-                      <Mail className="w-5 h-5" />
-                    </a>
-                    <a href="tel:+917541062514" className="text-neutral-400 hover:text-primary-600 transition-colors" aria-label="Call">
-                      <Phone className="w-5 h-5" />
-                    </a>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))
+            )}
           </div>
         </div>
       </section>
