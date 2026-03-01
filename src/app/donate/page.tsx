@@ -50,7 +50,7 @@ export default function DonatePage() {
       </section>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
-        {/* Fundraising Goal Section */}
+        {/* Total Donations Section */}
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -65,18 +65,18 @@ export default function DonatePage() {
             
             <div className="text-center relative z-10">
               <span className="inline-flex items-center px-4 py-2 rounded-full bg-primary-100 text-primary-700 text-sm font-medium mb-6">
-                Our Mission Goal
+                Our Impact
               </span>
               
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-primary-800 leading-tight">
-                Our Fundraising Goal
+                Total Donations Raised
               </h2>
               
               <p className="text-lg sm:text-xl text-neutral-600 mb-8 lg:mb-12 max-w-3xl mx-auto leading-relaxed">
-                Help us reach our target of ₹75,000 to make a meaningful impact in our community. Every contribution brings us closer to our mission.
+                Every contribution, no matter the size, helps us create meaningful impact in our community. Thank you to everyone who has supported our mission.
               </p>
               
-              {/* Heart Progress */}
+              {/* Donation Amount Display */}
               <div className="flex justify-center">
                 <div className="max-w-3xl w-full">
                   <HeartProgress />
