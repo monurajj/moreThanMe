@@ -69,11 +69,11 @@ export default function DonatePage() {
               </span>
               
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-primary-800 leading-tight">
-                Total Donations Raised
+                Remaining Funds for Impact
               </h2>
               
               <p className="text-lg sm:text-xl text-neutral-600 mb-8 lg:mb-12 max-w-3xl mx-auto leading-relaxed">
-                Every contribution, no matter the size, helps us create meaningful impact in our community. Thank you to everyone who has supported our mission.
+                This is the amount we still have from donations after expenses. Every contribution, no matter the size, helps us create meaningful impact in our community.
               </p>
               
               {/* Donation Amount Display */}

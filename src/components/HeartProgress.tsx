@@ -1,11 +1,12 @@
 "use client"
 import { useState, useEffect } from "react";
-interface DonationStats {
-  total_amount: number;
+
+interface TransparencyStats {
+  remaining_balance: number;
 }
 
 export default function HeartProgress() {
-  const [stats, setStats] = useState<DonationStats | null>(null);
+  const [stats, setStats] = useState<TransparencyStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [animationStarted, setAnimationStarted] = useState(false);
   const [animatedAmount, setAnimatedAmount] = useState(0);
@@ -17,10 +18,10 @@ export default function HeartProgress() {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/donations/stats");
+      const res = await fetch("/api/transparency");
       const data = await res.json().catch(() => ({}));
-      const totalAmount = data.total_amount_verified ?? data.total_amount ?? 0;
-      setStats({ total_amount: totalAmount });
+      const remainingBalance = data.remaining_balance ?? 0;
+      setStats({ remaining_balance: remainingBalance });
     } catch (err) {
       console.error("Error fetching stats:", err);
     } finally {
@@ -42,7 +43,7 @@ export default function HeartProgress() {
   useEffect(() => {
     if (!stats) return;
 
-    const target = stats.total_amount;
+    const target = stats.remaining_balance;
     let frameId: number;
     const duration = 1000; // ms
     const startTime = performance.now();
@@ -59,9 +60,9 @@ export default function HeartProgress() {
 
     frameId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frameId);
-  }, [stats?.total_amount]);
+  }, [stats?.remaining_balance]);
 
-  const currentAmount = animatedAmount || stats?.total_amount || 0;
+  const currentAmount = animatedAmount || stats?.remaining_balance || 0;
 
   // Show "Fetching..." until we have finished loading AND a short delay (avoids flashing ₹0)
   const stillFetching = loading || !animationStarted;
@@ -85,7 +86,7 @@ export default function HeartProgress() {
           </div>
           <div className="space-y-2 mt-4">
             <div className="text-sm text-neutral-500 dark:text-neutral-400">
-              Total amount raised
+              Remaining balance from donations
             </div>
           </div>
         </div>
@@ -135,10 +136,10 @@ export default function HeartProgress() {
         {/* Amount Details */}
         <div className="space-y-2 mt-4">
           <div className="text-sm text-neutral-500 dark:text-neutral-400">
-            Total amount raised
+            Remaining balance from donations
           </div>
           <p className="text-lg text-neutral-600 dark:text-neutral-500">
-            Every contribution helps us create positive change
+            This is what we still have available to fund upcoming initiatives
           </p>
         </div>
       </div>

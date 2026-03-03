@@ -286,14 +286,14 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          {/* <Button
+          <Button
             onClick={() => {
               setMenuOpen(false);
               handleDonate();
             }}
-            className="rounded-lg font-semibold transition-colors duration-200"
+            className="w-full rounded-lg font-semibold transition-colors duration-200"
             style={{ 
-              backgroundColor: '#A51C30',
+              backgroundColor: specialDay ? specialDay.colors.accent : '#A51C30',
               color: '#ffffff',
               padding: '12px 24px',
               marginTop: '16px',
@@ -304,7 +304,7 @@ export default function Navbar() {
             }}
           >
             Donate
-          </Button> */}
+          </Button>
         </nav>
       </div>
     </nav>

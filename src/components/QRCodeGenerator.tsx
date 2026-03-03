@@ -17,7 +17,16 @@ export default function QRCodeGenerator({ upiId, payeeName, amount }: QRCodeGene
     setIsLoading(true);
     try {
       // Create UPI payment URL
-      const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}${amount ? `&am=${amount}` : ""}&cu=INR`;
+      // Keep it minimal for maximum compatibility across apps (BHIM, GPay, PhonePe, etc.)
+      const params = new URLSearchParams();
+      params.set("pa", upiId);
+      params.set("cu", "INR");
+      if (amount && amount > 0) {
+        // UPI spec recommends up to two decimal places for amount
+        params.set("am", amount.toFixed(2));
+      }
+
+      const upiUrl = `upi://pay?${params.toString()}`;
       
       // Generate QR code
       const qrDataUrl = await QRCode.toDataURL(upiUrl, {

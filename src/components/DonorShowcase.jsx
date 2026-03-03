@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Users, TrendingUp, Star, Heart, Trophy, Award, Calendar, DollarSign, User } from "lucide-react";
+import { Users, TrendingUp, Star, Heart, Trophy, Award, Calendar, IndianRupee, User } from "lucide-react";
 import { fetchRecentDonors, fetchTopDonors, fetchTopContributors } from "../services/api";
 
 const DonorShowcase = () => {
@@ -65,7 +65,15 @@ const DonorShowcase = () => {
   };
 
   const formatAmount = (amount, currency = 'INR') => {
-    return `${currency} ${parseFloat(amount).toLocaleString('en-IN')}`;
+    const value = parseFloat(amount);
+    if (Number.isNaN(value)) return "₹0";
+
+    if (currency === 'INR') {
+      return `₹${value.toLocaleString('en-IN')}`;
+    }
+
+    // Fallback for any non-INR currency if it ever appears
+    return `${currency} ${value.toLocaleString('en-IN')}`;
   };
 
   const formatDate = (dateString) => {
