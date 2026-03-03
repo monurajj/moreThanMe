@@ -6,7 +6,7 @@ import Link from "next/link";
 import {
   LayoutDashboard,
   Newspaper,
-  DollarSign,
+  IndianRupee,
   LogOut,
   Menu,
   X,
@@ -24,7 +24,7 @@ const navItems = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { name: "Manage Admins", href: "/admin/admins", icon: Shield },
   { name: "Manage Contact", href: "/admin/managecontact", icon: MessageSquare },
-  { name: "Donate", href: "/admin/donate", icon: DollarSign },
+  { name: "Donate", href: "/admin/donate", icon: IndianRupee },
   { name: "Transparency", href: "/admin/transparency", icon: Receipt },
   { name: "Team", href: "/admin/team", icon: UserCircle },
   { name: "Our Works & Events", href: "/admin/works", icon: CalendarCheck },

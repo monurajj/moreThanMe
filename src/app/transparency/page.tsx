@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Shield, TrendingUp, DollarSign, Calendar } from "lucide-react";
+import { Shield, TrendingUp, IndianRupee, Calendar } from "lucide-react";
 import Button from "../../components/Button";
 import { useRouter } from "next/navigation";
 
@@ -183,7 +183,7 @@ export default function TransparencyPage() {
             <>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
                 <div className="bg-primary-50 rounded-xl p-5 border border-primary-100 text-center">
-                  <DollarSign className="w-8 h-8 text-primary-600 mx-auto mb-2" />
+                  <IndianRupee className="w-8 h-8 text-primary-600 mx-auto mb-2" />
                   <p className="text-sm text-primary-700 font-medium">Total funding (donations)</p>
                   <p className="text-xl font-bold text-primary-800">₹{(data.total_funding ?? 0).toLocaleString("en-IN")}</p>
                 </div>

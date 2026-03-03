@@ -1,5 +1,5 @@
 "use client"
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Button from "./Button";
 import QRCodeGenerator from "./QRCodeGenerator";
 import Image from "next/image";
@@ -61,6 +61,30 @@ export default function DonationForm() {
   // NGO UPI ID for display and verification
   const upiId = "8088133722@kotakbank";
   const expectedUpiLast4 = "3722"; // last 4 digits (receipts often show masked: ****3722@kotak)
+  const payeeDisplayName = "MoreThanMe";
+  const [returningFromUpi, setReturningFromUpi] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const flag = window.sessionStorage.getItem("mtm_upi_started");
+    if (flag === "1") {
+      setReturningFromUpi(true);
+    }
+  }, []);
+
+  const handleUpiIntent = () => {
+    const params = new URLSearchParams();
+    params.set("pa", upiId);
+    params.set("cu", "INR");
+    // We intentionally do NOT pass pn here to maximize compatibility (BHIM, etc.).
+
+    const upiUrl = `upi://pay?${params.toString()}`;
+
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem("mtm_upi_started", "1");
+      window.location.href = upiUrl;
+    }
+  };
 
   const isUpiMatching = (toUpiId: string | null | undefined): boolean => {
     if (!toUpiId) return false;
@@ -324,6 +348,10 @@ export default function DonationForm() {
 
       setSubmittedData(submittedData);
       setSubmissionSuccess(true);
+      if (typeof window !== "undefined") {
+        window.sessionStorage.removeItem("mtm_upi_started");
+      }
+      setReturningFromUpi(false);
       setReceiptData(null);
       setReceiptFile(null);
       setReceiptPreview(null);
@@ -423,29 +451,62 @@ export default function DonationForm() {
             </div>
             
             <h3 className="text-2xl sm:text-3xl font-bold mb-3 text-primary-800 text-center">
-              Instant UPI Payment
+              Donate to {payeeDisplayName}
             </h3>
             
             <p className="text-neutral-600 mb-8 text-center leading-relaxed">
-              Scan with any UPI app for quick & secure donation
+              Scan with any UPI app or tap below to support {payeeDisplayName}. In your UPI app you may briefly see our banking name as <strong>AKASH G</strong>.
             </p>
             
             {/* QR Code Container */}
             <div className="flex justify-center items-center mb-6">
               <div className="bg-gradient-to-br from-white to-primary-50 p-6 rounded-2xl shadow-inner border border-primary-100">
-                <div className="bg-white p-4 rounded-xl flex justify-center items-center">
+                <div className="bg-white p-4 rounded-xl flex flex-col items-center gap-3">
+                  <div className="flex flex-col items-center gap-1">
+                    <Image
+                      src="/morethanmelogo.png"
+                      alt="MoreThanMe Logo"
+                      width={96}
+                      height={24}
+                      className="h-8 w-auto"
+                    />
+                    <p className="text-xs font-semibold text-primary-700 tracking-wide uppercase">
+                      Hearts for India
+                    </p>
+                  </div>
                   <QRCodeGenerator 
                     upiId={upiId}
-                    payeeName="MoreThanMe NGO"
+                    payeeName={`${payeeDisplayName} NGO`}
                   />
+                  <p className="text-xs text-neutral-500 text-center max-w-xs">
+                    You are paying: <span className="font-semibold">{payeeDisplayName}</span> (<span className="font-mono">Akash ****{expectedUpiLast4}</span>)
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Special Note - Receipt Name */}
-            <p className="text-sm text-amber-700 bg-amber-50 rounded-lg px-4 py-2 mb-4 text-center border border-amber-200">
-              <span className="font-semibold">Note:</span> The receipt name will show as <strong>AKASH G</strong>
-            </p>
+            {/* Review & Pay Call-to-Action */}
+            <div className="mb-4">
+              <div className="bg-primary-50 rounded-xl px-4 py-3 text-center border border-primary-100">
+                <p className="text-sm text-primary-800 font-semibold">
+                  Review &amp; Pay
+                </p>
+                <p className="text-xs text-primary-700 mt-1">
+                  You are donating to <span className="font-semibold">{payeeDisplayName}</span>.  
+                  In your UPI app, the verified account holder will appear as <strong>AKASH G</strong> (Kotak Bank).
+                </p>
+                <button
+                  type="button"
+                  onClick={handleUpiIntent}
+                  className="mt-3 inline-flex items-center justify-center px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold transition-colors duration-200"
+                >
+                  Open in UPI App
+                </button>
+                <p className="mt-2 text-[11px] text-primary-700">
+                  If direct payment does not work in your app, please scan the QR code above instead.
+                </p>
+              </div>
+            </div>
             
             {/* UPI ID Display */}
             <div className="bg-primary-50 rounded-xl p-4 text-center">
@@ -483,6 +544,11 @@ export default function DonationForm() {
           <div className="absolute bottom-6 left-6 w-2 h-2 bg-primary-200 rounded-full opacity-40"></div>
           
           <div className="relative z-10">
+            {returningFromUpi && (
+              <div className="mb-4 p-3 rounded-xl bg-primary-50 border border-primary-200 text-xs text-primary-800 text-center">
+                If you have completed your UPI payment, please upload a screenshot of your receipt below so we can verify and add your donation.
+              </div>
+            )}
             {/* Icon Header */}
             <div className="flex justify-center mb-6">
               <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-primary-200 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -497,7 +563,7 @@ export default function DonationForm() {
             </h3>
             
             <p className="text-neutral-600 mb-8 text-center leading-relaxed">
-              Already donated? Upload your receipt for instant verification
+              Already donated? Upload your receipt for instant verification. For team verification, kindly upload your screenshot of the donation here.
             </p>
         
           {showReceiptSection && (
@@ -725,12 +791,12 @@ export default function DonationForm() {
                 </svg>
               </div>
               <h3 className="text-2xl sm:text-3xl font-bold mb-3 text-primary-800">
-                Thank You for Your Donation!
+                Thank You for Supporting {payeeDisplayName}!
               </h3>
               <p className="text-neutral-600">
                 {submittedData?.status === "verified"
-                  ? "Your contribution has been successfully submitted"
-                  : "Your data has been recorded and is under approval process."}
+                  ? `Your contribution to ${payeeDisplayName} has been successfully recorded.`
+                  : `Your donation to ${payeeDisplayName} has been recorded and is under approval process.`}
               </p>
               {submittedData?.status === "pending_verification" && (
                 <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm max-w-xl mx-auto">

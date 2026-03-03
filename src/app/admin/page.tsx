@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   MessageSquare,
-  DollarSign,
+  IndianRupee,
   UserCircle,
   Newspaper,
   ArrowRight,
@@ -33,7 +33,7 @@ const sections = [
     title: "Donate",
     description: "Verify and manage donations, view stats and receipts.",
     href: "/admin/donate",
-    icon: DollarSign,
+    icon: IndianRupee,
     color: "bg-amber-500",
   },
   {
